@@ -1,0 +1,26 @@
+appId: com.alertosaurus.app
+productName: Alertosaurus
+directories:
+  output: release
+
+mac:
+  target: dmg
+  category: public.app-category.developer-tools
+
+linux:
+  target:
+    - AppImage
+    - deb
+  category: Development
+
+win:
+  target: nsis
+
+files:
+  - dist/**/*
+  - assets/**/*
+  - "!**/*.ts"
+  - "!tests/**"
+
+extraMetadata:
+  main: dist/main/index.js
