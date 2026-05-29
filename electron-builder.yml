@@ -12,9 +12,19 @@ linux:
     - AppImage
     - deb
   category: Development
+  executableName: alertosaurus
+
+deb:
+  afterInstall: build/linux-after-install.sh
+  afterRemove: build/linux-after-remove.sh
 
 win:
   target: nsis
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  include: build/installer.nsh
 
 files:
   - dist/**/*
@@ -24,3 +34,5 @@ files:
 
 extraMetadata:
   main: dist/main/index.js
+
+afterPack: build/after-pack.js
