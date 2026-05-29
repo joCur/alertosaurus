@@ -8,7 +8,7 @@ mac:
   category: public.app-category.developer-tools
 
 pkg:
-  postInstallAction: build/mac-post-install.sh
+  scripts: build/pkg-scripts
 
 linux:
   target:
