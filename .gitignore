@@ -3,3 +3,4 @@ dist/
 *.db
 .superpowers/
 release/
+.DS_Store
