@@ -1,6 +1,6 @@
 export {};
 
-const sprite = document.getElementById('sprite')!;
+const spriteContainer = document.getElementById('sprite-container')!;
 const toastContainer = document.getElementById('toast-container')!;
 const toastCaller = document.getElementById('toast-caller')!;
 const toastMessage = document.getElementById('toast-message')!;
@@ -9,43 +9,113 @@ const overflow = document.getElementById('overflow')!;
 
 const api = (window as any).alertosaurus;
 
-// --- Sprite animation engine ---
+// --- Sprite animation engine (stacked layers, no image swapping) ---
 
-const NATIVE_W = 621;
-const NATIVE_H = 365;
-const FRAME_W = 150;
-const FRAME_H = FRAME_W * NATIVE_H / NATIVE_W;
+const DISPLAY_W = 225;
+let NATIVE_W = 1;
+let NATIVE_H = 1;
+let FRAME_H = 0;
 
-interface SheetInfo { file: string; cols: number; rows: number; }
+interface SheetInfo {
+  file: string;
+  cols: number;
+  rows: number;
+  fps: number;
+}
 
 const SHEETS: Record<string, SheetInfo> = {
-  'sitting-down':    { file: 'sitting-down.png',    cols: 4, rows: 4 },
-  'sitting-around':  { file: 'sitting-around.png',  cols: 3, rows: 3 },
-  'laying-down':     { file: 'laying-down.png',     cols: 3, rows: 3 },
-  'sleeping':        { file: 'sleeping.png',         cols: 3, rows: 3 },
-  'roaring':         { file: 'roaring.png',          cols: 3, rows: 3 },
+  'sitting-down':  { file: 'sitting-down.png',  cols: 4, rows: 4, fps: 9 },
+  'sitting':       { file: 'sitting.png',        cols: 3, rows: 3, fps: 10 },
+  'laying-down':   { file: 'laying-down.png',    cols: 3, rows: 3, fps: 7 },
+  'sleeping':      { file: 'sleeping.png',        cols: 3, rows: 3, fps: 10 },
+  'roaring':       { file: 'roaring.png',         cols: 3, rows: 3, fps: 8 },
+  'dragging':      { file: 'dragging.png',        cols: 4, rows: 4, fps: 18 },
 };
 
-sprite.style.width = `${FRAME_W}px`;
-sprite.style.height = `${FRAME_H}px`;
+const spriteLayers: Record<string, HTMLDivElement> = {};
+const sheetCanvases: Record<string, HTMLCanvasElement> = {};
+let activeLayerKey = '';
+let currentFrameCol = 0;
+let currentFrameRow = 0;
+
+function preloadSheets(): Promise<void> {
+  let firstDetected = false;
+  const promises = Object.entries(SHEETS).map(([key, sheet]) => {
+    return new Promise<void>(resolve => {
+      const img = new Image();
+      img.onload = () => {
+        if (!firstDetected) {
+          NATIVE_W = img.naturalWidth / sheet.cols;
+          NATIVE_H = img.naturalHeight / sheet.rows;
+          FRAME_H = DISPLAY_W * NATIVE_H / NATIVE_W;
+          spriteContainer.style.width = `${DISPLAY_W}px`;
+          spriteContainer.style.height = `${FRAME_H}px`;
+          firstDetected = true;
+        }
+
+        const layer = document.createElement('div');
+        layer.className = 'sprite-layer';
+        layer.style.width = `${DISPLAY_W}px`;
+        layer.style.height = `${FRAME_H}px`;
+        layer.style.backgroundImage = `url('../../assets/alertosaurus/${sheet.file}')`;
+        layer.style.backgroundSize = `${DISPLAY_W * sheet.cols}px ${FRAME_H * sheet.rows}px`;
+        spriteContainer.appendChild(layer);
+        spriteLayers[key] = layer;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        canvas.getContext('2d')!.drawImage(img, 0, 0);
+        sheetCanvases[key] = canvas;
+
+        resolve();
+      };
+      img.onerror = () => resolve();
+      img.src = `../../assets/alertosaurus/${sheet.file}`;
+    });
+  });
+  return Promise.all(promises).then(() => {});
+}
+
+function activateLayer(sheetKey: string) {
+  if (sheetKey === activeLayerKey) return;
+  const oldKey = activeLayerKey;
+  activeLayerKey = sheetKey;
+  spriteLayers[sheetKey].classList.add('active');
+  if (oldKey && spriteLayers[oldKey]) {
+    spriteLayers[oldKey].classList.remove('active');
+  }
+}
+
+function showFrame(sheetKey: string, frameIndex: number) {
+  activateLayer(sheetKey);
+  const sheet = SHEETS[sheetKey];
+  currentFrameCol = frameIndex % sheet.cols;
+  currentFrameRow = Math.floor(frameIndex / sheet.cols);
+  spriteLayers[sheetKey].style.backgroundPosition = `${-currentFrameCol * DISPLAY_W}px ${-currentFrameRow * FRAME_H}px`;
+}
+
+function isPixelOpaque(localX: number, localY: number): boolean {
+  const canvas = sheetCanvases[activeLayerKey];
+  if (!canvas) return true;
+  const nativeX = Math.floor(localX * NATIVE_W / DISPLAY_W) + currentFrameCol * NATIVE_W;
+  const nativeY = Math.floor(localY * NATIVE_H / FRAME_H) + currentFrameRow * NATIVE_H;
+  if (nativeX < 0 || nativeX >= canvas.width || nativeY < 0 || nativeY >= canvas.height) return false;
+  return canvas.getContext('2d')!.getImageData(nativeX, nativeY, 1, 1).data[3] > 20;
+}
+
+// --- Sequence player ---
 
 function range(start: number, end: number): number[] {
   const arr: number[] = [];
-  if (start <= end) {
-    for (let i = start; i <= end; i++) arr.push(i);
-  } else {
-    for (let i = start; i >= end; i--) arr.push(i);
-  }
+  if (start <= end) { for (let i = start; i <= end; i++) arr.push(i); }
+  else { for (let i = start; i >= end; i--) arr.push(i); }
   return arr;
 }
 
 function pingPong(start: number, end: number): number[] {
-  const forward = range(start, end);
-  const backward = range(end - 1, start + 1);
-  return [...forward, ...backward];
+  return [...range(start, end), ...range(end - 1, start + 1)];
 }
-
-// --- Sequence player ---
 
 interface Segment { sheetKey: string; frames: number[]; }
 
@@ -54,40 +124,18 @@ let loopSegment: Segment | null = null;
 let currentSegIndex = 0;
 let currentFrameIndex = 0;
 let animTimer: number | null = null;
-let currentSheetKey = '';
 let onTransitionDone: (() => void) | null = null;
-let currentFps = 8;
-
-type VisualPose = 'standing' | 'sitting' | 'sleeping' | 'roaring';
-let visualPose: VisualPose = 'standing';
-
-function setSheet(sheetKey: string) {
-  if (sheetKey === currentSheetKey) return;
-  currentSheetKey = sheetKey;
-  const sheet = SHEETS[sheetKey];
-  sprite.style.backgroundImage = `url('../../assets/alertosaurus/${sheet.file}')`;
-  sprite.style.backgroundSize = `${FRAME_W * sheet.cols}px ${FRAME_H * sheet.rows}px`;
-}
-
-function showFrame(sheetKey: string, frameIndex: number) {
-  setSheet(sheetKey);
-  const sheet = SHEETS[sheetKey];
-  const col = frameIndex % sheet.cols;
-  const row = Math.floor(frameIndex / sheet.cols);
-  sprite.style.backgroundPosition = `${-col * FRAME_W}px ${-row * FRAME_H}px`;
-}
 
 function stopAnimation() {
   if (animTimer !== null) { clearInterval(animTimer); animTimer = null; }
 }
 
-function playSegments(segments: Segment[], loop: Segment | null, fps: number, onDone?: () => void) {
+function playSegments(segments: Segment[], loop: Segment | null, onDone?: () => void) {
   stopAnimation();
   segmentQueue = segments;
   loopSegment = loop;
   currentSegIndex = 0;
   currentFrameIndex = 0;
-  currentFps = fps;
   onTransitionDone = onDone ?? null;
 
   if (segments.length === 0 && loop) {
@@ -97,8 +145,9 @@ function playSegments(segments: Segment[], loop: Segment | null, fps: number, on
   }
   if (segments.length === 0) return;
 
-  showFrame(segments[0].sheetKey, segments[0].frames[0]);
-  animTimer = setInterval(tick, 1000 / fps) as unknown as number;
+  const seg = segments[0];
+  showFrame(seg.sheetKey, seg.frames[0]);
+  animTimer = setInterval(tick, 1000 / SHEETS[seg.sheetKey].fps) as unknown as number;
 }
 
 function tick() {
@@ -114,22 +163,30 @@ function tick() {
       onTransitionDone?.();
       return;
     }
+    const nextSeg = segmentQueue[currentSegIndex];
+    stopAnimation();
+    showFrame(nextSeg.sheetKey, nextSeg.frames[0]);
+    animTimer = setInterval(tick, 1000 / SHEETS[nextSeg.sheetKey].fps) as unknown as number;
+    return;
   }
-  const nextSeg = segmentQueue[currentSegIndex];
-  showFrame(nextSeg.sheetKey, nextSeg.frames[currentFrameIndex]);
+  showFrame(seg.sheetKey, seg.frames[currentFrameIndex]);
 }
 
 function startLoop() {
   if (!loopSegment) return;
+  const seg = loopSegment;
   currentFrameIndex = 0;
-  showFrame(loopSegment.sheetKey, loopSegment.frames[0]);
+  showFrame(seg.sheetKey, seg.frames[0]);
   animTimer = setInterval(() => {
-    currentFrameIndex = (currentFrameIndex + 1) % loopSegment!.frames.length;
-    showFrame(loopSegment!.sheetKey, loopSegment!.frames[currentFrameIndex]);
-  }, 1000 / currentFps) as unknown as number;
+    currentFrameIndex = (currentFrameIndex + 1) % seg.frames.length;
+    showFrame(seg.sheetKey, seg.frames[currentFrameIndex]);
+  }, 1000 / SHEETS[seg.sheetKey].fps) as unknown as number;
 }
 
 // --- Transition paths ---
+
+type VisualPose = 'standing' | 'sitting' | 'sleeping' | 'roaring';
+let visualPose: VisualPose = 'standing';
 
 function goToState(target: 'idle' | 'sleeping' | 'roaring') {
   const transitions: Segment[] = [];
@@ -137,38 +194,34 @@ function goToState(target: 'idle' | 'sleeping' | 'roaring') {
 
   if (target === 'idle') {
     if (from === 'sitting') {
-      visualPose = 'sitting';
-      playSegments([], { sheetKey: 'sitting-around', frames: pingPong(0, 8) }, 6);
+      playSegments([], { sheetKey: 'sitting', frames: pingPong(0, 8) });
       api.stateReached('idle');
       return;
-    }
-    if (from === 'roaring' || from === 'standing') {
-      transitions.push({ sheetKey: 'sitting-down', frames: range(0, 15) });
     }
     if (from === 'sleeping') {
       transitions.push({ sheetKey: 'laying-down', frames: range(8, 0) });
       transitions.push({ sheetKey: 'sitting-down', frames: range(0, 15) });
+    } else {
+      transitions.push({ sheetKey: 'sitting-down', frames: range(0, 15) });
     }
     visualPose = 'sitting';
-    playSegments(transitions, { sheetKey: 'sitting-around', frames: pingPong(0, 8) }, 6, () => {
+    playSegments(transitions, { sheetKey: 'sitting', frames: pingPong(0, 8) }, () => {
       api.stateReached('idle');
     });
   }
 
   else if (target === 'sleeping') {
-    if (from === 'sitting') {
-      transitions.push({ sheetKey: 'sitting-down', frames: range(15, 0) });
-      transitions.push({ sheetKey: 'laying-down', frames: range(0, 8) });
-    } else if (from === 'standing' || from === 'roaring') {
-      transitions.push({ sheetKey: 'laying-down', frames: range(0, 8) });
-    } else if (from === 'sleeping') {
-      visualPose = 'sleeping';
-      playSegments([], { sheetKey: 'sleeping', frames: pingPong(0, 8) }, 10);
+    if (from === 'sleeping') {
+      playSegments([], { sheetKey: 'sleeping', frames: pingPong(0, 8) });
       api.stateReached('sleeping');
       return;
     }
+    if (from === 'sitting') {
+      transitions.push({ sheetKey: 'sitting-down', frames: range(15, 0) });
+    }
+    transitions.push({ sheetKey: 'laying-down', frames: range(0, 8) });
     visualPose = 'sleeping';
-    playSegments(transitions, { sheetKey: 'sleeping', frames: pingPong(0, 8) }, 10, () => {
+    playSegments(transitions, { sheetKey: 'sleeping', frames: pingPong(0, 8) }, () => {
       api.stateReached('sleeping');
     });
   }
@@ -180,7 +233,7 @@ function goToState(target: 'idle' | 'sleeping' | 'roaring') {
       transitions.push({ sheetKey: 'laying-down', frames: range(8, 0) });
     }
     visualPose = 'roaring';
-    playSegments(transitions, { sheetKey: 'roaring', frames: range(0, 8) }, 10, () => {
+    playSegments(transitions, { sheetKey: 'roaring', frames: range(0, 8) }, () => {
       api.stateReached('roaring');
     });
   }
@@ -239,9 +292,17 @@ overflow.addEventListener('click', () => {
 // --- Click-through ---
 
 document.addEventListener('mousemove', (e) => {
+  if (isDragging) return;
   const el = document.elementFromPoint(e.clientX, e.clientY);
-  if (el && (el.closest('#sprite') || el.closest('#toast-container') || el.closest('#overflow'))) {
+  if (el && (el.closest('#toast-container') || el.closest('#overflow'))) {
     api.setIgnoreMouseEvents(false);
+  } else if (el && el.closest('#sprite-container')) {
+    const rect = spriteContainer.getBoundingClientRect();
+    if (isPixelOpaque(e.clientX - rect.left, e.clientY - rect.top)) {
+      api.setIgnoreMouseEvents(false);
+    } else {
+      api.setIgnoreMouseEvents(true, { forward: true });
+    }
   } else {
     api.setIgnoreMouseEvents(true, { forward: true });
   }
@@ -250,11 +311,14 @@ document.addEventListener('mousemove', (e) => {
 // --- Drag ---
 
 let isDragging = false;
+let didDrag = false;
 let lastScreenX = 0;
 let lastScreenY = 0;
+let stateBeforeDrag: 'idle' | 'sleeping' | 'roaring' | null = null;
 
-sprite.addEventListener('mousedown', (e) => {
+spriteContainer.addEventListener('mousedown', (e) => {
   isDragging = true;
+  didDrag = false;
   lastScreenX = e.screenX;
   lastScreenY = e.screenY;
   api.setIgnoreMouseEvents(false);
@@ -265,6 +329,11 @@ document.addEventListener('mousemove', (e) => {
   if (!isDragging) return;
   const dx = e.screenX - lastScreenX;
   const dy = e.screenY - lastScreenY;
+  if (!didDrag && Math.abs(dx) + Math.abs(dy) > 2) {
+    didDrag = true;
+    stateBeforeDrag = visualPose === 'sitting' ? 'idle' : visualPose === 'sleeping' ? 'sleeping' : visualPose === 'roaring' ? 'roaring' : 'idle';
+    playSegments([], { sheetKey: 'dragging', frames: range(0, 15) });
+  }
   lastScreenX = e.screenX;
   lastScreenY = e.screenY;
   api.dragging(dx, dy);
@@ -274,26 +343,21 @@ document.addEventListener('mouseup', () => {
   if (!isDragging) return;
   isDragging = false;
   api.dragEnd();
+  if (didDrag && stateBeforeDrag) {
+    goToState(stateBeforeDrag);
+    stateBeforeDrag = null;
+  }
 });
 
 // --- Pet click (open hub) ---
 
-sprite.addEventListener('click', () => {
-  if (isDragging) return;
+spriteContainer.addEventListener('click', () => {
+  if (didDrag) { didDrag = false; return; }
   if (!toastContainer.classList.contains('hidden')) return;
   api.petClicked();
 });
 
-// --- Preload all sprite sheets, then start ---
-const preloadPromises = Object.values(SHEETS).map(sheet => {
-  return new Promise<void>(resolve => {
-    const img = new Image();
-    img.onload = () => resolve();
-    img.onerror = () => resolve();
-    img.src = `../../assets/alertosaurus/${sheet.file}`;
-  });
-});
-
-Promise.all(preloadPromises).then(() => {
+// --- Startup ---
+preloadSheets().then(() => {
   goToState('idle');
 });

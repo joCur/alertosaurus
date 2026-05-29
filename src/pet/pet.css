@@ -16,12 +16,22 @@ body {
   padding-bottom: 8px;
 }
 
-#sprite {
-  width: 150px;
-  background-repeat: no-repeat;
-  cursor: pointer;
+#sprite-container {
   position: relative;
+  cursor: pointer;
   z-index: 1;
+}
+
+.sprite-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-repeat: no-repeat;
+  display: none;
+}
+
+.sprite-layer.active {
+  display: block;
 }
 
 /* Toast speech bubble */
