@@ -4,8 +4,11 @@ directories:
   output: release
 
 mac:
-  target: dmg
+  target: pkg
   category: public.app-category.developer-tools
+
+pkg:
+  postInstallAction: build/mac-post-install.sh
 
 linux:
   target:
