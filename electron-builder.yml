@@ -1,5 +1,6 @@
 appId: com.alertosaurus.app
 productName: Alertosaurus
+asar: false
 directories:
   output: release
 
@@ -37,5 +38,3 @@ files:
 
 extraMetadata:
   main: dist/main/index.js
-
-afterPack: build/after-pack.js
