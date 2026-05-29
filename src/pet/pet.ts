@@ -14,7 +14,7 @@ api.onSetState((state: string) => {
 });
 
 sprite.addEventListener('animationend', () => {
-  if (sprite.dataset.state === 'happy') {
+  if (sprite.dataset.state === 'going-to-sleep' || sprite.dataset.state === 'waking') {
     api.animationComplete();
   }
 });

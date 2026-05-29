@@ -29,7 +29,7 @@ function resetIdleTimer() {
 
 function showToast(toast: { caller: string; message: string; duration_ms: number; received_at: string }) {
   petWindow?.webContents.send('pet:show-toast', toast);
-  petWindow?.webContents.send('pet:set-state', 'talking');
+  petWindow?.webContents.send('pet:set-state', 'roaring');
 
   if (toastTimer) clearTimeout(toastTimer);
 
@@ -66,14 +66,17 @@ function onNotify(toast: { caller: string; message: string; duration_ms: number;
   if (idleTimer) clearTimeout(idleTimer);
 
   const state = stateMachine.notificationArrived();
+  petWindow?.webContents.send('pet:set-state', state);
 
-  if (state === 'happy') {
-    petWindow?.webContents.send('pet:set-state', state);
-    // Renderer plays happy animation, then sends 'pet:animation-complete'
-    // which triggers happyComplete() → talking → showToast(queue.active)
+  if (state === 'roaring') {
+    const active = queue.active;
+    if (active) {
+      showToast(active);
+    }
   }
-  // If state is 'talking', the toast is queued — it will be shown
-  // when the current toast finishes via dismissToast() → queue.next()
+  // If state is 'waking', renderer plays reverse going-to-sleep animation,
+  // then sends 'pet:animation-complete' which triggers transitionComplete()
+  // → roaring → showToast(queue.active)
 
   if (queue.overflowCount > 0) {
     petWindow?.webContents.send('pet:show-overflow', queue.overflowCount);
@@ -95,7 +98,7 @@ function createPetWindow() {
 
   petWindow = new BrowserWindow({
     width: 320,
-    height: 220,
+    height: 280,
     x: safeX,
     y: safeY,
     frame: false,
@@ -137,10 +140,14 @@ function createHubWindow() {
 
 function setupIPC() {
   ipcMain.on('pet:animation-complete', () => {
-    stateMachine.happyComplete();
-    const active = queue.active;
-    if (active) {
-      showToast(active);
+    const state = stateMachine.transitionComplete();
+    petWindow?.webContents.send('pet:set-state', state);
+
+    if (state === 'roaring') {
+      const active = queue.active;
+      if (active) {
+        showToast(active);
+      }
     }
   });
 
