@@ -35,7 +35,7 @@ describe('ConfigManager', () => {
     const loaded = manager.load();
     expect(loaded.port).toBe(8080);
     expect(loaded.host).toBe('127.0.0.1');
-    expect(loaded.idle_timeout_ms).toBe(600_000);
+    expect(loaded.idle_timeout_ms).toBe(30_000);
   });
 
   it('writes runtime file', () => {

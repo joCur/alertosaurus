@@ -15,6 +15,7 @@ contextBridge.exposeInMainWorld('alertosaurus', {
   },
   toastDismissed: () => ipcRenderer.send('pet:toast-dismissed'),
   animationComplete: () => ipcRenderer.send('pet:animation-complete'),
+  stateReached: (state: string) => ipcRenderer.send('pet:state-reached', state),
   petClicked: () => ipcRenderer.send('pet:clicked'),
   overflowClicked: () => ipcRenderer.send('pet:overflow-clicked'),
   dragging: (dx: number, dy: number) => ipcRenderer.send('pet:dragging', dx, dy),

@@ -1,4 +1,4 @@
-export type PetState = 'idle' | 'going-to-sleep' | 'sleeping' | 'waking' | 'roaring';
+export type PetState = 'idle' | 'sleeping' | 'roaring';
 
 export class PetStateMachine {
   private _state: PetState = 'idle';
@@ -8,23 +8,7 @@ export class PetStateMachine {
   }
 
   notificationArrived(): PetState {
-    if (this._state === 'roaring') {
-      return this._state;
-    }
-    if (this._state === 'sleeping' || this._state === 'going-to-sleep') {
-      this._state = 'waking';
-    } else if (this._state === 'waking') {
-      return this._state;
-    } else {
-      this._state = 'roaring';
-    }
-    return this._state;
-  }
-
-  transitionComplete(): PetState {
-    if (this._state === 'going-to-sleep') {
-      this._state = 'sleeping';
-    } else if (this._state === 'waking') {
+    if (this._state !== 'roaring') {
       this._state = 'roaring';
     }
     return this._state;
@@ -37,7 +21,7 @@ export class PetStateMachine {
 
   idleTimeout(): PetState {
     if (this._state === 'idle') {
-      this._state = 'going-to-sleep';
+      this._state = 'sleeping';
     }
     return this._state;
   }

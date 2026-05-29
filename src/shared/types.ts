@@ -31,6 +31,6 @@ export interface RuntimeInfo {
 export const DEFAULT_CONFIG: Config = {
   port: 4174,
   host: '127.0.0.1',
-  idle_timeout_ms: 600_000,
+  idle_timeout_ms: 30_000,
   pet_position: { x: 100, y: 100 },
 };

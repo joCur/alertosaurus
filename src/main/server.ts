@@ -4,7 +4,7 @@ import { NotificationDb } from './db';
 import { ToastQueue } from './queue';
 import { ToastData } from '../shared/types';
 
-export type NotifyCallback = (toast: ToastData) => void;
+export type NotifyCallback = () => void;
 
 export function createApp(db: NotificationDb, queue: ToastQueue, onNotify?: NotifyCallback) {
   const app = express();
@@ -47,7 +47,7 @@ export function createApp(db: NotificationDb, queue: ToastQueue, onNotify?: Noti
     const result = db.insert({ caller, message, duration_ms: dur });
     const toast: ToastData = { ...result, caller, message, duration_ms: dur };
     queue.push(toast);
-    onNotify?.(toast);
+    onNotify?.();
 
     res.json({ id: result.id, received_at: result.received_at });
   });

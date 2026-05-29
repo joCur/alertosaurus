@@ -17,6 +17,18 @@ describe('PetStateMachine', () => {
     expect(sm.state).toBe('roaring');
   });
 
+  it('transitions to roaring on notification from sleeping', () => {
+    sm.idleTimeout();
+    sm.notificationArrived();
+    expect(sm.state).toBe('roaring');
+  });
+
+  it('stays roaring if notification arrives while roaring', () => {
+    sm.notificationArrived();
+    sm.notificationArrived();
+    expect(sm.state).toBe('roaring');
+  });
+
   it('transitions roaring → idle when toast finished with no more queued', () => {
     sm.notificationArrived();
     sm.toastFinished(false);
@@ -29,14 +41,8 @@ describe('PetStateMachine', () => {
     expect(sm.state).toBe('roaring');
   });
 
-  it('transitions idle → going-to-sleep on idle timeout', () => {
+  it('transitions idle → sleeping on idle timeout', () => {
     sm.idleTimeout();
-    expect(sm.state).toBe('going-to-sleep');
-  });
-
-  it('transitions going-to-sleep → sleeping on transitionComplete', () => {
-    sm.idleTimeout();
-    sm.transitionComplete();
     expect(sm.state).toBe('sleeping');
   });
 
@@ -46,61 +52,15 @@ describe('PetStateMachine', () => {
     expect(sm.state).toBe('roaring');
   });
 
-  it('wakes from sleeping on notification', () => {
-    sm.idleTimeout();
-    sm.transitionComplete();
-    expect(sm.state).toBe('sleeping');
-    sm.notificationArrived();
-    expect(sm.state).toBe('waking');
-  });
-
-  it('transitions waking → roaring on transitionComplete', () => {
-    sm.idleTimeout();
-    sm.transitionComplete();
-    sm.notificationArrived();
-    expect(sm.state).toBe('waking');
-    sm.transitionComplete();
-    expect(sm.state).toBe('roaring');
-  });
-
-  it('interrupts going-to-sleep with waking on notification', () => {
-    sm.idleTimeout();
-    expect(sm.state).toBe('going-to-sleep');
-    sm.notificationArrived();
-    expect(sm.state).toBe('waking');
-    sm.transitionComplete();
-    expect(sm.state).toBe('roaring');
-  });
-
-  it('stays roaring if notification arrives while roaring', () => {
-    sm.notificationArrived();
-    expect(sm.state).toBe('roaring');
-    sm.notificationArrived();
-    expect(sm.state).toBe('roaring');
-  });
-
-  it('stays waking if notification arrives while waking', () => {
-    sm.idleTimeout();
-    sm.transitionComplete();
-    sm.notificationArrived();
-    expect(sm.state).toBe('waking');
-    sm.notificationArrived();
-    expect(sm.state).toBe('waking');
-  });
-
-  it('full cycle: idle → roaring → idle → going-to-sleep → sleeping → waking → roaring → idle', () => {
+  it('full cycle: idle → roaring → idle → sleeping → roaring → idle', () => {
     expect(sm.state).toBe('idle');
     sm.notificationArrived();
     expect(sm.state).toBe('roaring');
     sm.toastFinished(false);
     expect(sm.state).toBe('idle');
     sm.idleTimeout();
-    expect(sm.state).toBe('going-to-sleep');
-    sm.transitionComplete();
     expect(sm.state).toBe('sleeping');
     sm.notificationArrived();
-    expect(sm.state).toBe('waking');
-    sm.transitionComplete();
     expect(sm.state).toBe('roaring');
     sm.toastFinished(false);
     expect(sm.state).toBe('idle');

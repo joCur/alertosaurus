@@ -19,17 +19,20 @@ const stateMachine = new PetStateMachine();
 let idleTimer: ReturnType<typeof setTimeout> | null = null;
 let toastTimer: ReturnType<typeof setTimeout> | null = null;
 
+function sendPetState(state: string) {
+  petWindow?.webContents.send('pet:set-state', state);
+}
+
 function resetIdleTimer() {
   if (idleTimer) clearTimeout(idleTimer);
   idleTimer = setTimeout(() => {
-    const state = stateMachine.idleTimeout();
-    petWindow?.webContents.send('pet:set-state', state);
+    stateMachine.idleTimeout();
+    sendPetState('sleeping');
   }, config.idle_timeout_ms);
 }
 
 function showToast(toast: { caller: string; message: string; duration_ms: number; received_at: string }) {
   petWindow?.webContents.send('pet:show-toast', toast);
-  petWindow?.webContents.send('pet:set-state', 'roaring');
 
   if (toastTimer) clearTimeout(toastTimer);
 
@@ -46,37 +49,31 @@ function dismissToast() {
 
   const next = queue.next();
   if (next) {
-    const state = stateMachine.toastFinished(true);
-    petWindow?.webContents.send('pet:set-state', state);
+    stateMachine.toastFinished(true);
     showToast(next);
 
     if (queue.overflowCount > 0) {
       petWindow?.webContents.send('pet:show-overflow', queue.overflowCount);
     }
   } else {
-    const state = stateMachine.toastFinished(false);
-    petWindow?.webContents.send('pet:set-state', state);
+    stateMachine.toastFinished(false);
+    sendPetState('idle');
     resetIdleTimer();
   }
 
   hubWindow?.webContents.send('hub:updated');
 }
 
-function onNotify(toast: { caller: string; message: string; duration_ms: number; received_at: string; id: string }) {
+function onNotify() {
   if (idleTimer) clearTimeout(idleTimer);
 
+  const prevState = stateMachine.state;
   const state = stateMachine.notificationArrived();
-  petWindow?.webContents.send('pet:set-state', state);
 
-  if (state === 'roaring') {
-    const active = queue.active;
-    if (active) {
-      showToast(active);
-    }
+  if (state === 'roaring' && prevState !== 'roaring') {
+    sendPetState('roaring');
+    // Toast will be shown when renderer fires 'pet:state-reached' with 'roaring'
   }
-  // If state is 'waking', renderer plays reverse going-to-sleep animation,
-  // then sends 'pet:animation-complete' which triggers transitionComplete()
-  // → roaring → showToast(queue.active)
 
   if (queue.overflowCount > 0) {
     petWindow?.webContents.send('pet:show-overflow', queue.overflowCount);
@@ -98,7 +95,7 @@ function createPetWindow() {
 
   petWindow = new BrowserWindow({
     width: 320,
-    height: 280,
+    height: 300,
     x: safeX,
     y: safeY,
     frame: false,
@@ -139,10 +136,7 @@ function createHubWindow() {
 }
 
 function setupIPC() {
-  ipcMain.on('pet:animation-complete', () => {
-    const state = stateMachine.transitionComplete();
-    petWindow?.webContents.send('pet:set-state', state);
-
+  ipcMain.on('pet:state-reached', (_e, state: string) => {
     if (state === 'roaring') {
       const active = queue.active;
       if (active) {
