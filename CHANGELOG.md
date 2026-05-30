@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.2](https://github.com/joCur/alertosaurus/compare/v1.0.1...v1.0.2) (2026-05-30)
+
+
+### Bug Fixes
+
+* use dynamic version in health check test ([#5](https://github.com/joCur/alertosaurus/issues/5)) ([f1d6360](https://github.com/joCur/alertosaurus/commit/f1d63606ada3e24632a76aa62f5ebba7e9dc16bf))
+* use dynamic version in health check test to avoid release breakage ([f1d6360](https://github.com/joCur/alertosaurus/commit/f1d63606ada3e24632a76aa62f5ebba7e9dc16bf))
+
 ## [1.0.1](https://github.com/joCur/alertosaurus/compare/v1.0.0...v1.0.1) (2026-05-30)
 
 
