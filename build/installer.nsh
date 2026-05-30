@@ -1,9 +1,14 @@
 !macro customInstall
-  ; Add app resources directory to user PATH so 'roar' CLI is available via node
-  nsExec::ExecToLog 'setx PATH "%PATH%;$INSTDIR\resources\app\dist\cli"'
+  ; Create roar.cmd wrapper in app directory
+  FileOpen $0 "$INSTDIR\roar.cmd" w
+  FileWrite $0 '@echo off$\r$\n'
+  FileWrite $0 '"$INSTDIR\resources\app\dist\cli\index.js" %*$\r$\n'
+  FileClose $0
+
+  ; Add app directory to user PATH
+  nsExec::ExecToLog 'setx PATH "$INSTDIR;%PATH%"'
 !macroend
 
 !macro customUnInstall
-  ; Clean up PATH entry on uninstall
-  nsExec::ExecToLog 'powershell -Command "[Environment]::SetEnvironmentVariable(\"PATH\", ($env:PATH -replace [regex]::Escape(\"$INSTDIR\resources\app\dist\cli;\"), \"\"), \"User\")"'
+  Delete "$INSTDIR\roar.cmd"
 !macroend
