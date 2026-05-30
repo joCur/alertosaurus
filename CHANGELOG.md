@@ -1,0 +1,38 @@
+# Changelog
+
+## 1.0.0 (2026-05-30)
+
+
+### Features
+
+* add config module with runtime file support ([bc74e99](https://github.com/joCur/alertosaurus/commit/bc74e99a7d4aa2d2802878e5ca1ed4366545b3d5))
+* add Electron main process with IPC, windows, and server lifecycle ([8897503](https://github.com/joCur/alertosaurus/commit/8897503fa0349ecdabb223c140d7d883d2ada5fc))
+* add electron-builder config and complete v1 acceptance ([6a11907](https://github.com/joCur/alertosaurus/commit/6a11907da241d18a075553a25ed745a6edb292c0))
+* add HTTP server with /notify and /health endpoints ([027dca5](https://github.com/joCur/alertosaurus/commit/027dca5ff67ce92ce0a72d9e8216b4fa51982833))
+* add hub renderer with notification history and day grouping ([e6d0c64](https://github.com/joCur/alertosaurus/commit/e6d0c6414654777c5c79b800c1cfeae3c2ebc9a1))
+* add pet state machine with full lifecycle transitions ([af7f401](https://github.com/joCur/alertosaurus/commit/af7f4016c46d3581e27b4e905aa7614f7839332f))
+* add release-please for automated versioning and releases ([754a190](https://github.com/joCur/alertosaurus/commit/754a19041893f27e9ae6e29d882647ceced3774c))
+* add roar CLI for sending notifications ([fe3a5e7](https://github.com/joCur/alertosaurus/commit/fe3a5e7f06f55f2ea4d1abe326a4ed649e59a0f5))
+* add SQLite notification database module ([dc972be](https://github.com/joCur/alertosaurus/commit/dc972be506fc220157cd25f86dc46744af0913cb))
+* add toast queue with overflow tracking ([89d9112](https://github.com/joCur/alertosaurus/commit/89d9112322bdbaf379267e332d39af237811755a))
+* install roar CLI via platform installers ([c4ef433](https://github.com/joCur/alertosaurus/commit/c4ef433d54e638f0665002d71bf905b291336b39))
+* rework sprite system with separate sheets and sequence engine ([b4bc26f](https://github.com/joCur/alertosaurus/commit/b4bc26fc3206fab1016d5e3ec979fbe943d62c50))
+* scaffold project with types, build config, and test setup ([f3cf6fc](https://github.com/joCur/alertosaurus/commit/f3cf6fc91339bd9f98d7df5cc0acba6541e59501))
+* stacked sprite layers, auto-detect dimensions, dragging animation ([85847a8](https://github.com/joCur/alertosaurus/commit/85847a8d1dc02c51038a7c49df238108e48623ea))
+* switch macOS to pkg installer with roar symlink post-install ([c8e2081](https://github.com/joCur/alertosaurus/commit/c8e2081ba7e4129f701dbc7b2a93cc29b93eb309))
+* switch to new triceratops sprites with transition animations ([9f661c6](https://github.com/joCur/alertosaurus/commit/9f661c6a7a824727ece1a8980dca1efc15c77768))
+
+
+### Bug Fixes
+
+* add author email for deb package ([01222e3](https://github.com/joCur/alertosaurus/commit/01222e31c75811e7328a739b5bcefbb4ab4bd6b3))
+* add missing sprite sheets (roaring, sitting, sleeping) ([22455fc](https://github.com/joCur/alertosaurus/commit/22455fcde52106072aed08fd6d1152368a58343d))
+* address all code review findings ([f91a3f0](https://github.com/joCur/alertosaurus/commit/f91a3f0fe721dbfa2695d24e3c19a71fd14db00b))
+* escape NSIS variables, use roar.cmd wrapper for Windows ([80a9e9d](https://github.com/joCur/alertosaurus/commit/80a9e9d5c8f209e1834ca15fbfd41a6c390cc0ec))
+* move electron to devDependencies ([7d005a4](https://github.com/joCur/alertosaurus/commit/7d005a46708ccea9dd4a92fc98163ec0a1ca289f))
+* remove afterPack, disable asar, symlink CLI directly ([6e2eee0](https://github.com/joCur/alertosaurus/commit/6e2eee0463a17e0832c357ff70a63be75bbb37fa))
+* remove duplicate author field in package.json ([8733c21](https://github.com/joCur/alertosaurus/commit/8733c21066ed697025686353602d7b503edbf493))
+* remove NSIS EnVar dependency, simplify Windows CLI install ([3defeed](https://github.com/joCur/alertosaurus/commit/3defeedd9a88f270332968a3db803a6b2d80b12c))
+* restore electron as devDependency with correct types ([86717c9](https://github.com/joCur/alertosaurus/commit/86717c9a7b82061bc560c4f3dd0e46ae76df27e8))
+* run tests before electron-rebuild to avoid native module conflict ([038cd7e](https://github.com/joCur/alertosaurus/commit/038cd7e4d1081f633689e902bc89b416a65ce415))
+* use correct pkg scripts directory for macOS post-install ([edbe8d5](https://github.com/joCur/alertosaurus/commit/edbe8d5c9c1185ee54b0b85cce34cf4df624b910))
