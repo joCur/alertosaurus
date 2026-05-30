@@ -1,4 +1,5 @@
 import { app, BrowserWindow, desktopCapturer, ipcMain, Menu, nativeImage, screen, systemPreferences, Tray } from 'electron';
+import fs from 'fs';
 import path from 'path';
 import { ConfigManager } from './config';
 import { NotificationDb } from './db';
@@ -192,7 +193,8 @@ function resetPetPosition() {
 
 async function createTray() {
   const iconPath = path.join(__dirname, '../../assets/icon.png');
-  const trimmed = sharp(iconPath).trim();
+  const iconBuffer = fs.readFileSync(iconPath);
+  const trimmed = sharp(iconBuffer).trim();
   const resizeOpts = { fit: 'contain' as const, background: { r: 0, g: 0, b: 0, alpha: 0 } };
 
   let icon: Electron.NativeImage;
