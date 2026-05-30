@@ -120,3 +120,22 @@ body {
 #overflow.hidden {
   display: none;
 }
+
+#sprite-container {
+  transform-origin: bottom center;
+}
+
+.squish-impact {
+  transform: scaleX(1.2) scaleY(0.7);
+  transition: transform 80ms ease-out;
+}
+
+.squish-stretch {
+  transform: scaleX(0.9) scaleY(1.1);
+  transition: transform 100ms ease-in-out;
+}
+
+.squish-settle {
+  transform: scale(1.0);
+  transition: transform 120ms ease-out;
+}
