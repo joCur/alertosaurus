@@ -2,6 +2,10 @@
   "name": "alertosaurus",
   "version": "1.0.0",
   "description": "Desktop notification hub with a pixel-art dinosaur",
+  "author": {
+    "name": "Jonas Curth",
+    "email": "curth@mediainterface.de"
+  },
   "main": "dist/main/index.js",
   "bin": {
     "roar": "./dist/cli/index.js"
