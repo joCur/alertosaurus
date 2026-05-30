@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/joCur/alertosaurus/compare/v1.0.0...v1.0.1) (2026-05-30)
+
+
+### Bug Fixes
+
+* add roar CLI to user PATH on Windows install ([#3](https://github.com/joCur/alertosaurus/issues/3)) ([d6faaae](https://github.com/joCur/alertosaurus/commit/d6faaae425658d2e6e50a43412c39eb15a806f8a))
+
 ## 1.0.0 (2026-05-30)
 
 
