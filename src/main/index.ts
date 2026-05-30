@@ -150,6 +150,7 @@ function createHubWindow() {
     width: 480,
     height: 600,
     show: false,
+    icon: process.platform === 'win32' ? path.join(__dirname, '../../build/icon.ico') : undefined,
     titleBarStyle: 'hidden',
     titleBarOverlay: {
       color: '#1e1e2e',
@@ -201,8 +202,10 @@ async function createTray() {
     icon.addRepresentation({ buffer: buf1x, width: 22, height: 22, scaleFactor: 1 });
     icon.addRepresentation({ buffer: buf2x, width: 22, height: 22, scaleFactor: 2 });
   } else {
-    const buf = await trimmed.clone().resize(24, 24, resizeOpts).png().toBuffer();
-    icon.addRepresentation({ buffer: buf, width: 24, height: 24, scaleFactor: 1 });
+    const buf1x = await trimmed.clone().resize(24, 24, resizeOpts).png().toBuffer();
+    const buf2x = await trimmed.clone().resize(48, 48, resizeOpts).png().toBuffer();
+    icon.addRepresentation({ buffer: buf1x, width: 24, height: 24, scaleFactor: 1 });
+    icon.addRepresentation({ buffer: buf2x, width: 24, height: 24, scaleFactor: 2 });
   }
 
   tray = new Tray(icon);
