@@ -1,4 +1,4 @@
-export const SPRITE_GROUND_OFFSET = 13;
+export const SPRITE_GROUND_OFFSET = 5;
 export const BODY_PADDING = 8;
 export const PET_WINDOW_WIDTH = 320;
 export const PET_WINDOW_HEIGHT = 300;

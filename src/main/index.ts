@@ -9,11 +9,11 @@ import http from 'http';
 import sharp from 'sharp';
 import {
   findLandingSurface,
-  feetScreenY,
-  targetWindowY as computeTargetWindowY,
   scanX as computeScanX,
   createGravityLoop,
   SPRITE_DISPLAY_WIDTH,
+  BODY_PADDING,
+  SPRITE_GROUND_OFFSET,
 } from './gravity';
 
 let petWindow: BrowserWindow | null = null;
@@ -151,14 +151,18 @@ function createHubWindow() {
 async function captureAndFall() {
   if (!petWindow) return;
 
-  const [winX, winY] = petWindow.getPosition();
+  const bounds = petWindow.getBounds();
+  const winX = bounds.x;
+  const winY = bounds.y;
+  const winH = bounds.height;
   const primaryDisplay = screen.getPrimaryDisplay();
-  const { height: screenH } = primaryDisplay.workAreaSize;
+  const workArea = primaryDisplay.workArea;
   const displaySize = primaryDisplay.size;
+  const screenBottom = workArea.y + workArea.height;
 
-  const feetY = feetScreenY(winY);
+  const feetY = winY + winH - BODY_PADDING - SPRITE_GROUND_OFFSET;
   const stripX = computeScanX(winX);
-  const stripHeight = screenH - feetY;
+  const stripHeight = screenBottom - feetY;
 
   if (stripHeight <= 1) {
     config.pet_position = { x: winX, y: winY };
@@ -167,45 +171,54 @@ async function captureAndFall() {
     return;
   }
 
-  let landingScreenY = screenH;
+  let landingScreenY = screenBottom;
 
   if (process.platform !== 'darwin' ||
       systemPreferences.getMediaAccessStatus('screen') === 'granted') {
     try {
+      petWindow.setContentProtection(true);
       const sources = await desktopCapturer.getSources({
         types: ['screen'],
         thumbnailSize: { width: displaySize.width, height: displaySize.height },
       });
+      petWindow.setContentProtection(false);
 
       if (sources.length > 0) {
         const thumbnail = sources[0].thumbnail.toPNG();
-        const clampedX = Math.max(0, Math.min(stripX, displaySize.width - SPRITE_DISPLAY_WIDTH));
-        const clampedWidth = Math.min(SPRITE_DISPLAY_WIDTH, displaySize.width - clampedX);
-        const clampedHeight = Math.min(stripHeight, displaySize.height - feetY);
+        const imgMeta = await sharp(thumbnail).metadata();
+        const imgW = imgMeta.width!;
+        const imgH = imgMeta.height!;
+        const scaleX = imgW / displaySize.width;
+        const scaleY = imgH / displaySize.height;
 
-        if (clampedWidth > 0 && clampedHeight > 0) {
+        const cropLeft = Math.round(Math.max(0, Math.min(stripX, displaySize.width - SPRITE_DISPLAY_WIDTH)) * scaleX);
+        const cropTop = Math.round(feetY * scaleY);
+        const cropWidth = Math.min(Math.round(SPRITE_DISPLAY_WIDTH * scaleX), imgW - cropLeft);
+        const cropHeight = Math.min(Math.round(stripHeight * scaleY), imgH - cropTop);
+
+        if (cropWidth > 0 && cropHeight > 0) {
           const { data, info } = await sharp(thumbnail)
             .extract({
-              left: clampedX,
-              top: feetY,
-              width: clampedWidth,
-              height: clampedHeight,
+              left: cropLeft,
+              top: cropTop,
+              width: cropWidth,
+              height: cropHeight,
             })
             .raw()
             .toBuffer({ resolveWithObject: true });
 
           const edgeRow = findLandingSurface(data, info.width, info.height, info.channels, config.edge_threshold);
           if (edgeRow !== null) {
-            landingScreenY = feetY + edgeRow;
+            landingScreenY = feetY + Math.round(edgeRow / scaleY);
           }
         }
       }
     } catch {
-      // Capture failed — fall to screen bottom
+      petWindow.setContentProtection(false);
     }
   }
 
-  const targetWinY = computeTargetWindowY(landingScreenY);
+  const targetWinY = landingScreenY - winH + BODY_PADDING + SPRITE_GROUND_OFFSET;
 
   if (targetWinY <= winY) {
     config.pet_position = { x: winX, y: winY };
@@ -220,7 +233,7 @@ async function captureAndFall() {
     winY,
     targetWinY,
     (y) => {
-      petWindow?.setPosition(winX, y);
+      petWindow?.setBounds({ x: winX, y, width: bounds.width, height: bounds.height });
     },
     (y) => {
       cancelGravity = null;
