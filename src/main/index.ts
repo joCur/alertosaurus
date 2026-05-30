@@ -1,4 +1,4 @@
-import { app, BrowserWindow, desktopCapturer, ipcMain, Menu, screen, systemPreferences } from 'electron';
+import { app, BrowserWindow, desktopCapturer, ipcMain, Menu, nativeImage, screen, systemPreferences, Tray } from 'electron';
 import path from 'path';
 import { ConfigManager } from './config';
 import { NotificationDb } from './db';
@@ -20,6 +20,7 @@ import {
 
 let petWindow: BrowserWindow | null = null;
 let hubWindow: BrowserWindow | null = null;
+let tray: Tray | null = null;
 let isQuitting = false;
 
 const configManager = new ConfigManager();
@@ -169,6 +170,51 @@ function createHubWindow() {
       hubWindow?.hide();
     }
   });
+}
+
+function resetPetPosition() {
+  if (!petWindow) return;
+  if (cancelGravity) {
+    cancelGravity();
+    cancelGravity = null;
+  }
+  const primary = screen.getPrimaryDisplay().workArea;
+  const x = primary.x + Math.floor((primary.width - PET_WINDOW_WIDTH) / 2);
+  const y = primary.y + Math.floor((primary.height - PET_WINDOW_HEIGHT) / 2);
+  petWindow.setBounds({ x, y, width: PET_WINDOW_WIDTH, height: PET_WINDOW_HEIGHT });
+  config.pet_position = { x, y };
+  configManager.save(config);
+  if (config.gravity_enabled) {
+    captureAndFall();
+  }
+}
+
+async function createTray() {
+  const iconPath = path.join(__dirname, '../../assets/icon.png');
+  const trimmed = sharp(iconPath).trim();
+  const resizeOpts = { fit: 'contain' as const, background: { r: 0, g: 0, b: 0, alpha: 0 } };
+
+  const icon = nativeImage.createEmpty();
+  if (process.platform === 'darwin') {
+    const buf1x = await trimmed.clone().resize(22, 22, resizeOpts).png().toBuffer();
+    const buf2x = await trimmed.clone().resize(44, 44, resizeOpts).png().toBuffer();
+    icon.addRepresentation({ buffer: buf1x, width: 22, height: 22, scaleFactor: 1 });
+    icon.addRepresentation({ buffer: buf2x, width: 22, height: 22, scaleFactor: 2 });
+  } else {
+    const buf = await trimmed.clone().resize(24, 24, resizeOpts).png().toBuffer();
+    icon.addRepresentation({ buffer: buf, width: 24, height: 24, scaleFactor: 1 });
+  }
+
+  tray = new Tray(icon);
+  tray.setToolTip('Alertosaurus');
+
+  const contextMenu = Menu.buildFromTemplate([
+    { label: 'Show Hub', click: () => { hubWindow?.show(); hubWindow?.focus(); } },
+    { label: 'Reset Pet Position', click: () => resetPetPosition() },
+    { type: 'separator' },
+    { label: 'Quit', click: () => app.quit() },
+  ]);
+  tray.setContextMenu(contextMenu);
 }
 
 async function captureAndFall() {
@@ -366,14 +412,17 @@ function setupIPC() {
 
 app.on('before-quit', () => { isQuitting = true; });
 
-app.whenReady().then(() => {
-  if (process.platform !== 'darwin') {
+app.whenReady().then(async () => {
+  if (process.platform === 'darwin') {
+    app.dock.hide();
+  } else {
     Menu.setApplicationMenu(null);
   }
 
   setupIPC();
   createPetWindow();
   createHubWindow();
+  await createTray();
 
   httpServer = expressApp.listen(config.port, config.host, () => {
     configManager.writeRuntime({
@@ -389,6 +438,8 @@ app.whenReady().then(() => {
 
 app.on('will-quit', () => {
   if (cancelGravity) { cancelGravity(); cancelGravity = null; }
+  tray?.destroy();
+  tray = null;
   configManager.removeRuntime();
   httpServer?.close();
   db.close();
@@ -397,5 +448,5 @@ app.on('will-quit', () => {
 });
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
+  // Tray keeps the app alive — don't quit when windows close
 });
