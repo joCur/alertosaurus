@@ -1,10 +1,3 @@
-!ifndef HWND_BROADCAST
-  !define HWND_BROADCAST 0xFFFF
-!endif
-!ifndef WM_SETTINGCHANGE
-  !define WM_SETTINGCHANGE 0x001A
-!endif
-
 !macro customInstall
   FileOpen $0 "$INSTDIR\roar.cmd" w
   FileWrite $0 '@echo off$\r$\n'
@@ -25,7 +18,8 @@
   nsExec::ExecToLog 'powershell -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\add-path.ps1"'
   Pop $0
 
-  SendMessage ${HWND_BROADCAST} ${WM_SETTINGCHANGE} 0 "STR:Environment" /TIMEOUT=5000
+  ; HWND_BROADCAST=0xFFFF, WM_SETTINGCHANGE=0x001A
+  SendMessage 0xFFFF 0x001A 0 "STR:Environment" /TIMEOUT=5000
 !macroend
 
 !macro customUnInstall
@@ -43,5 +37,5 @@
   nsExec::ExecToLog 'powershell -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\remove-path.ps1"'
   Pop $0
 
-  SendMessage ${HWND_BROADCAST} ${WM_SETTINGCHANGE} 0 "STR:Environment" /TIMEOUT=5000
+  SendMessage 0xFFFF 0x001A 0 "STR:Environment" /TIMEOUT=5000
 !macroend
