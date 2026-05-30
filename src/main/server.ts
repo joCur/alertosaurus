@@ -4,6 +4,9 @@ import { NotificationDb } from './db';
 import { ToastQueue } from './queue';
 import { ToastData } from '../shared/types';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { version } = require('../../package.json');
+
 export type NotifyCallback = () => void;
 
 export function createApp(db: NotificationDb, queue: ToastQueue, onNotify?: NotifyCallback) {
@@ -55,7 +58,7 @@ export function createApp(db: NotificationDb, queue: ToastQueue, onNotify?: Noti
   app.get('/health', (_req: Request, res: Response) => {
     res.json({
       status: 'ok',
-      version: '1.0.0',
+      version,
       uptime_s: Math.floor(process.uptime()),
     });
   });

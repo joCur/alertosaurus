@@ -7,14 +7,6 @@ const endpointEl = document.getElementById('endpoint-info')!;
 const clearBtn = document.getElementById('clear-btn')!;
 const quitBtn = document.getElementById('quit-btn')!;
 
-interface Notification {
-  id: string;
-  caller: string;
-  message: string;
-  duration_ms: number;
-  received_at: string;
-}
-
 function formatTime(iso: string): string {
   const d = new Date(iso);
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -31,13 +23,9 @@ function formatDay(iso: string): string {
   return d.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' });
 }
 
-function escapeHtml(s: string): string {
-  const div = document.createElement('div');
-  div.textContent = s;
-  return div.innerHTML;
-}
+interface NotificationItem { caller: string; message: string; received_at: string; }
 
-function render(notifications: Notification[]) {
+function render(notifications: NotificationItem[]) {
   listEl.innerHTML = '';
 
   if (notifications.length === 0) {
@@ -47,7 +35,7 @@ function render(notifications: Notification[]) {
 
   emptyEl.classList.add('hidden');
 
-  const grouped = new Map<string, Notification[]>();
+  const grouped = new Map<string, NotificationItem[]>();
   for (const n of notifications) {
     const day = new Date(n.received_at).toDateString();
     if (!grouped.has(day)) grouped.set(day, []);
@@ -66,11 +54,22 @@ function render(notifications: Notification[]) {
     for (const n of items) {
       const row = document.createElement('div');
       row.className = 'notification-row';
-      row.innerHTML = `
-        <span class="notification-caller">${escapeHtml(n.caller)}</span>
-        <span class="notification-message">${escapeHtml(n.message)}</span>
-        <span class="notification-time">${formatTime(n.received_at)}</span>
-      `;
+
+      const caller = document.createElement('span');
+      caller.className = 'notification-caller';
+      caller.textContent = n.caller;
+      row.appendChild(caller);
+
+      const message = document.createElement('span');
+      message.className = 'notification-message';
+      message.textContent = n.message;
+      row.appendChild(message);
+
+      const time = document.createElement('span');
+      time.className = 'notification-time';
+      time.textContent = formatTime(n.received_at);
+      row.appendChild(time);
+
       group.appendChild(row);
     }
 

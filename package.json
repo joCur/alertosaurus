@@ -9,12 +9,16 @@
   "scripts": {
     "build:main": "tsc -p tsconfig.json",
     "build:renderer": "tsc -p tsconfig.renderer.json",
-    "build:copy": "cp src/pet/index.html src/pet/pet.css dist/pet/ && cp src/hub/index.html src/hub/hub.css dist/hub/",
-    "build": "npm run build:main && npm run build:renderer && npm run build:copy",
+    "build:copy": "shx mkdir -p dist/pet dist/hub && shx cp src/pet/index.html src/pet/pet.css dist/pet/ && shx cp src/hub/index.html src/hub/hub.css dist/hub/",
+    "build:shebang": "node -e \"const f='dist/cli/index.js';const c=require('fs').readFileSync(f,'utf8');if(!c.startsWith('#!'))require('fs').writeFileSync(f,'#!/usr/bin/env node\\n'+c)\"",
+    "build": "npm run build:main && npm run build:renderer && npm run build:copy && npm run build:shebang",
     "start": "npm run build && electron .",
     "test": "vitest run",
     "test:watch": "vitest",
     "dist": "npm run build && electron-builder"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "keywords": [],
   "author": "Jonas Curth <curth@mediainterface.de>",
@@ -26,12 +30,14 @@
     "mri": "^1.2.0"
   },
   "devDependencies": {
+    "@electron/rebuild": "^4.0.4",
     "@types/better-sqlite3": "^7.6.13",
     "@types/express": "^5.0.6",
     "@types/node": "^25.9.1",
     "@types/supertest": "^7.2.0",
     "electron": "^33.4.11",
     "electron-builder": "^26.8.1",
+    "shx": "^0.4.0",
     "supertest": "^7.2.2",
     "typescript": "^6.0.3",
     "vitest": "^4.1.7"

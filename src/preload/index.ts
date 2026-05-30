@@ -1,18 +1,15 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
+function onChannel(channel: string, cb: (...args: any[]) => void) {
+  ipcRenderer.removeAllListeners(channel);
+  ipcRenderer.on(channel, (_e, ...args) => cb(...args));
+}
+
 contextBridge.exposeInMainWorld('alertosaurus', {
-  onSetState: (cb: (state: string) => void) => {
-    ipcRenderer.on('pet:set-state', (_e, state) => cb(state));
-  },
-  onShowToast: (cb: (data: { caller: string; message: string; duration_ms: number; received_at: string }) => void) => {
-    ipcRenderer.on('pet:show-toast', (_e, data) => cb(data));
-  },
-  onHideToast: (cb: () => void) => {
-    ipcRenderer.on('pet:hide-toast', () => cb());
-  },
-  onShowOverflow: (cb: (count: number) => void) => {
-    ipcRenderer.on('pet:show-overflow', (_e, count) => cb(count));
-  },
+  onSetState: (cb: (state: string) => void) => onChannel('pet:set-state', cb),
+  onShowToast: (cb: (data: { caller: string; message: string; duration_ms: number; received_at: string }) => void) => onChannel('pet:show-toast', cb),
+  onHideToast: (cb: () => void) => onChannel('pet:hide-toast', cb),
+  onShowOverflow: (cb: (count: number) => void) => onChannel('pet:show-overflow', cb),
   toastDismissed: () => ipcRenderer.send('pet:toast-dismissed'),
   animationComplete: () => ipcRenderer.send('pet:animation-complete'),
   stateReached: (state: string) => ipcRenderer.send('pet:state-reached', state),
@@ -27,7 +24,5 @@ contextBridge.exposeInMainWorld('alertosaurus', {
   getEndpointInfo: () => ipcRenderer.invoke('hub:get-endpoint-info'),
   clearHistory: () => ipcRenderer.invoke('hub:clear-history'),
   quit: () => ipcRenderer.send('hub:quit'),
-  onNotificationsUpdated: (cb: () => void) => {
-    ipcRenderer.on('hub:updated', () => cb());
-  },
+  onNotificationsUpdated: (cb: () => void) => onChannel('hub:updated', cb),
 });

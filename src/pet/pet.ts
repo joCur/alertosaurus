@@ -33,7 +33,7 @@ const SHEETS: Record<string, SheetInfo> = {
 };
 
 const spriteLayers: Record<string, HTMLDivElement> = {};
-const sheetCanvases: Record<string, HTMLCanvasElement> = {};
+const alphaData: Record<string, { data: Uint8ClampedArray; width: number; height: number }> = {};
 let activeLayerKey = '';
 let currentFrameCol = 0;
 let currentFrameRow = 0;
@@ -65,12 +65,17 @@ function preloadSheets(): Promise<void> {
         const canvas = document.createElement('canvas');
         canvas.width = img.naturalWidth;
         canvas.height = img.naturalHeight;
-        canvas.getContext('2d')!.drawImage(img, 0, 0);
-        sheetCanvases[key] = canvas;
+        const ctx = canvas.getContext('2d')!;
+        ctx.drawImage(img, 0, 0);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        alphaData[key] = { data: imageData.data, width: canvas.width, height: canvas.height };
 
         resolve();
       };
-      img.onerror = () => resolve();
+      img.onerror = () => {
+        console.error(`Failed to load sprite sheet: ${sheet.file}`);
+        resolve();
+      };
       img.src = `../../assets/alertosaurus/${sheet.file}`;
     });
   });
@@ -96,12 +101,12 @@ function showFrame(sheetKey: string, frameIndex: number) {
 }
 
 function isPixelOpaque(localX: number, localY: number): boolean {
-  const canvas = sheetCanvases[activeLayerKey];
-  if (!canvas) return true;
+  const alpha = alphaData[activeLayerKey];
+  if (!alpha) return true;
   const nativeX = Math.floor(localX * NATIVE_W / DISPLAY_W) + currentFrameCol * NATIVE_W;
   const nativeY = Math.floor(localY * NATIVE_H / FRAME_H) + currentFrameRow * NATIVE_H;
-  if (nativeX < 0 || nativeX >= canvas.width || nativeY < 0 || nativeY >= canvas.height) return false;
-  return canvas.getContext('2d')!.getImageData(nativeX, nativeY, 1, 1).data[3] > 20;
+  if (nativeX < 0 || nativeX >= alpha.width || nativeY < 0 || nativeY >= alpha.height) return false;
+  return alpha.data[(nativeY * alpha.width + nativeX) * 4 + 3] > 20;
 }
 
 // --- Sequence player ---
@@ -267,6 +272,7 @@ api.onShowToast((data: { caller: string; message: string; received_at: string })
 
 api.onHideToast(() => {
   toastContainer.classList.add('hidden');
+  overflow.classList.add('hidden');
 });
 
 toastContainer.addEventListener('click', () => {
@@ -279,10 +285,6 @@ toastContainer.addEventListener('click', () => {
 api.onShowOverflow((count: number) => {
   overflow.textContent = `+${count} more`;
   overflow.classList.remove('hidden');
-});
-
-api.onHideToast(() => {
-  overflow.classList.add('hidden');
 });
 
 overflow.addEventListener('click', () => {

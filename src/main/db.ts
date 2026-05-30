@@ -21,9 +21,15 @@ export class NotificationDb {
     this.db.exec(`
       CREATE INDEX IF NOT EXISTS idx_received_at ON notifications(received_at DESC, seq DESC)
     `);
+    this.seq = this.initSeq();
   }
 
-  private seq = 0;
+  private seq: number;
+
+  private initSeq(): number {
+    const row = this.db.prepare('SELECT MAX(seq) as maxSeq FROM notifications').get() as { maxSeq: number | null } | undefined;
+    return row?.maxSeq ?? 0;
+  }
 
   insert(data: { caller: string; message: string; duration_ms: number }): { id: string; received_at: string } {
     const id = crypto.randomUUID();

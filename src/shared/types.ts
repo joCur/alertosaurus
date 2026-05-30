@@ -6,13 +6,7 @@ export interface Notification {
   received_at: string;
 }
 
-export interface ToastData {
-  id: string;
-  caller: string;
-  message: string;
-  duration_ms: number;
-  received_at: string;
-}
+export type ToastData = Notification;
 
 export interface Config {
   port: number;

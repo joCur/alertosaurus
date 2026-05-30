@@ -5,6 +5,7 @@ import path from 'path';
 import fs from 'fs';
 import os from 'os';
 import http from 'http';
+import { RuntimeInfo } from '../shared/types';
 
 export interface ParsedArgs {
   from: string;
@@ -25,13 +26,6 @@ export function parseArgs(argv: string[]): ParsedArgs {
     message: args._.length > 0 ? args._.join(' ') : null,
     duration: args.duration !== undefined ? Number(args.duration) : undefined,
   };
-}
-
-export interface RuntimeInfo {
-  host: string;
-  port: number;
-  pid: number;
-  started_at: string;
 }
 
 export function readRuntimeFile(filePath: string): RuntimeInfo | null {

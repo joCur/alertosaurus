@@ -9,6 +9,7 @@ import http from 'http';
 
 let petWindow: BrowserWindow | null = null;
 let hubWindow: BrowserWindow | null = null;
+let isQuitting = false;
 
 const configManager = new ConfigManager();
 const config = configManager.load();
@@ -72,7 +73,6 @@ function onNotify() {
 
   if (state === 'roaring' && prevState !== 'roaring') {
     sendPetState('roaring');
-    // Toast will be shown when renderer fires 'pet:state-reached' with 'roaring'
   }
 
   if (queue.overflowCount > 0) {
@@ -130,13 +130,15 @@ function createHubWindow() {
 
   hubWindow.loadFile(path.join(__dirname, '../hub/index.html'));
   hubWindow.on('close', (e) => {
-    e.preventDefault();
-    hubWindow?.hide();
+    if (!isQuitting) {
+      e.preventDefault();
+      hubWindow?.hide();
+    }
   });
 }
 
 function setupIPC() {
-  ipcMain.on('pet:state-reached', (_e, state: string) => {
+  ipcMain.on('pet:state-reached', (_e: Electron.IpcMainEvent, state: string) => {
     if (state === 'roaring') {
       const active = queue.active;
       if (active) {
@@ -159,7 +161,7 @@ function setupIPC() {
     hubWindow?.focus();
   });
 
-  ipcMain.on('pet:dragging', (_e, dx: number, dy: number) => {
+  ipcMain.on('pet:dragging', (_e: Electron.IpcMainEvent, dx: number, dy: number) => {
     if (!petWindow) return;
     const [x, y] = petWindow.getPosition();
     petWindow.setPosition(x + dx, y + dy);
@@ -168,11 +170,11 @@ function setupIPC() {
   ipcMain.on('pet:drag-end', () => {
     if (!petWindow) return;
     const [x, y] = petWindow.getPosition();
-    const current = configManager.load();
-    configManager.save({ ...current, pet_position: { x, y } });
+    config.pet_position = { x, y };
+    configManager.save(config);
   });
 
-  ipcMain.on('set-ignore-mouse-events', (_e, ignore: boolean, opts?: { forward: boolean }) => {
+  ipcMain.on('set-ignore-mouse-events', (_e: Electron.IpcMainEvent, ignore: boolean, opts?: { forward: boolean }) => {
     petWindow?.setIgnoreMouseEvents(ignore, opts);
   });
 
@@ -193,6 +195,8 @@ function setupIPC() {
     app.quit();
   });
 }
+
+app.on('before-quit', () => { isQuitting = true; });
 
 app.whenReady().then(() => {
   setupIPC();

@@ -6,9 +6,10 @@
   FileClose $0
 
   ; Add app directory to user PATH
-  nsExec::ExecToLog 'setx PATH "$INSTDIR;%PATH%"'
+  EnVar::AddValue "PATH" "$INSTDIR"
 !macroend
 
 !macro customUnInstall
   Delete "$INSTDIR\roar.cmd"
+  EnVar::DeleteValue "PATH" "$INSTDIR"
 !macroend

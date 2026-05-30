@@ -35,11 +35,11 @@ export class ConfigManager {
   }
 
   save(config: Config): void {
-    fs.writeFileSync(this.configPath, JSON.stringify(config, null, 2));
+    fs.writeFileSync(this.configPath, JSON.stringify(config, null, 2), { mode: 0o600 });
   }
 
   writeRuntime(info: RuntimeInfo): void {
-    fs.writeFileSync(this.runtimePath, JSON.stringify(info, null, 2));
+    fs.writeFileSync(this.runtimePath, JSON.stringify(info, null, 2), { mode: 0o600 });
   }
 
   readRuntime(): RuntimeInfo | null {

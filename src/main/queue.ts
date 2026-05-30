@@ -3,10 +3,10 @@ import { ToastData } from '../shared/types';
 export class ToastQueue {
   private pending: ToastData[] = [];
   private _active: ToastData | null = null;
-  private readonly maxPending: number;
+  private readonly overflowThreshold: number;
 
-  constructor(maxPending = 5) {
-    this.maxPending = maxPending;
+  constructor(overflowThreshold = 5) {
+    this.overflowThreshold = overflowThreshold;
   }
 
   push(toast: ToastData): ToastData | null {
@@ -40,7 +40,7 @@ export class ToastQueue {
   }
 
   get overflowCount(): number {
-    return Math.max(0, this.pending.length - this.maxPending);
+    return Math.max(0, this.pending.length - this.overflowThreshold);
   }
 
   clear(): void {
