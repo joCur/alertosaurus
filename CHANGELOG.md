@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/joCur/alertosaurus/compare/v1.0.2...v1.1.0) (2026-05-30)
+
+
+### Features
+
+* gravity perch — pet falls and lands on screen surfaces ([#9](https://github.com/joCur/alertosaurus/issues/9)) ([1b00dc8](https://github.com/joCur/alertosaurus/commit/1b00dc8e752c1d65d995c37dece3469fb8c88fc2))
+* rewrite roar CLI in Go for standalone binary ([#7](https://github.com/joCur/alertosaurus/issues/7)) ([4f9ea1e](https://github.com/joCur/alertosaurus/commit/4f9ea1e150a7b758a46321af50f2e55a80547982))
+
 ## [1.0.2](https://github.com/joCur/alertosaurus/compare/v1.0.1...v1.0.2) (2026-05-30)
 
 
