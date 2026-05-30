@@ -47,6 +47,11 @@ export class NotificationDb {
     ).all() as Notification[];
   }
 
+  delete(id: string): boolean {
+    const result = this.db.prepare('DELETE FROM notifications WHERE id = ?').run(id);
+    return result.changes > 0;
+  }
+
   clear(): void {
     this.db.exec('DELETE FROM notifications');
     this.seq = 0;
