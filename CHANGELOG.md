@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.4.0](https://github.com/joCur/alertosaurus/compare/v1.3.0...v1.4.0) (2026-05-30)
+
+
+### Features
+
+* open hub with right-click instead of left-click ([#22](https://github.com/joCur/alertosaurus/issues/22)) ([04bc2c0](https://github.com/joCur/alertosaurus/commit/04bc2c0fd60576fbb9e3bdeaafbcd20225590666))
+* open hub with right-click instead of left-click on pet ([04bc2c0](https://github.com/joCur/alertosaurus/commit/04bc2c0fd60576fbb9e3bdeaafbcd20225590666))
+
+
+### Bug Fixes
+
+* show tray icon on Windows ([#25](https://github.com/joCur/alertosaurus/issues/25)) ([fbbed7a](https://github.com/joCur/alertosaurus/commit/fbbed7a8bfa63d9149a1004f3a6585c89baa9645))
+* show tray icon on Windows by using createFromBuffer ([fbbed7a](https://github.com/joCur/alertosaurus/commit/fbbed7a8bfa63d9149a1004f3a6585c89baa9645))
+* trim icon padding so Windows app icon matches other apps ([#24](https://github.com/joCur/alertosaurus/issues/24)) ([fec156e](https://github.com/joCur/alertosaurus/commit/fec156ede9113a8bf339f99b281843e6ee5b9758))
+
 ## [1.3.0](https://github.com/joCur/alertosaurus/compare/v1.2.0...v1.3.0) (2026-05-30)
 
 
