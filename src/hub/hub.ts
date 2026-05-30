@@ -1,6 +1,7 @@
 export {};
 
 const api = (window as any).alertosaurus;
+document.body.dataset.platform = api.platform;
 const listEl = document.getElementById('notification-list')!;
 const emptyEl = document.getElementById('empty-state')!;
 const endpointEl = document.getElementById('endpoint-info')!;

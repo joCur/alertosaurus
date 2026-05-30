@@ -1,4 +1,4 @@
-import { app, BrowserWindow, desktopCapturer, ipcMain, screen, systemPreferences } from 'electron';
+import { app, BrowserWindow, desktopCapturer, ipcMain, Menu, screen, systemPreferences } from 'electron';
 import path from 'path';
 import { ConfigManager } from './config';
 import { NotificationDb } from './db';
@@ -149,6 +149,12 @@ function createHubWindow() {
     width: 480,
     height: 600,
     show: false,
+    titleBarStyle: 'hidden',
+    titleBarOverlay: {
+      color: '#1e1e2e',
+      symbolColor: '#cdd6f4',
+      height: 36,
+    },
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.js'),
       contextIsolation: true,
@@ -357,6 +363,10 @@ function setupIPC() {
 app.on('before-quit', () => { isQuitting = true; });
 
 app.whenReady().then(() => {
+  if (process.platform !== 'darwin') {
+    Menu.setApplicationMenu(null);
+  }
+
   setupIPC();
   createPetWindow();
   createHubWindow();
