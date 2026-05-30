@@ -67,6 +67,12 @@ describe('findLandingSurface', () => {
     expect(findLandingSurface(buf, 4, 4, 4, 30)).toBeNull();
   });
 
+  it('returns null for height less than 2', () => {
+    const buf = Buffer.alloc(4 * 4); // 1 row, width 4, RGBA
+    expect(findLandingSurface(buf, 4, 1, 4, 30)).toBeNull();
+    expect(findLandingSurface(buf, 4, 0, 4, 30)).toBeNull();
+  });
+
   it('finds the first edge, not later ones', () => {
     const buf = makeBuffer([
       [50, 50, 50],
@@ -122,5 +128,16 @@ describe('createGravityLoop', () => {
     cancel();
     vi.advanceTimersByTime(TICK_INTERVAL * 10);
     expect(ticks.length).toBe(countBefore);
+  });
+
+  it('lands immediately when startY >= targetY', () => {
+    const landed = vi.fn();
+    const ticks: number[] = [];
+    const cancel = createGravityLoop(200, 100, (y) => ticks.push(y), landed);
+    expect(landed).toHaveBeenCalledOnce();
+    expect(landed).toHaveBeenCalledWith(200);
+    expect(ticks.length).toBe(0);
+    vi.advanceTimersByTime(TICK_INTERVAL * 10);
+    expect(ticks.length).toBe(0);
   });
 });

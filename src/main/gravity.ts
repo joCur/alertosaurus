@@ -63,6 +63,11 @@ export function createGravityLoop(
   onTick: (y: number) => void,
   onLand: (y: number) => void,
 ): () => void {
+  if (startY >= targetY) {
+    onLand(startY);
+    return () => {};
+  }
+
   let y = startY;
   let vy = 0;
 
@@ -73,8 +78,8 @@ export function createGravityLoop(
     if (y >= targetY) {
       y = targetY;
       clearInterval(timer);
-      onTick(y);
-      onLand(y);
+      onTick(Math.round(y));
+      onLand(Math.round(y));
       return;
     }
 
