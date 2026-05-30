@@ -93,6 +93,23 @@ func TestParseArgs(t *testing.T) {
 			t.Errorf("expected empty message after --help, got %q", result.Message)
 		}
 	})
+
+	t.Run("parses --verbose flag", func(t *testing.T) {
+		result := parseArgs([]string{"--verbose", "hello"})
+		if !result.Verbose {
+			t.Error("expected Verbose=true")
+		}
+		if result.Message != "hello" {
+			t.Errorf("expected message='hello', got %q", result.Message)
+		}
+	})
+
+	t.Run("parses -v flag", func(t *testing.T) {
+		result := parseArgs([]string{"-v", "hello"})
+		if !result.Verbose {
+			t.Error("expected Verbose=true")
+		}
+	})
 }
 
 func TestReadRuntimeFile(t *testing.T) {

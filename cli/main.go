@@ -25,6 +25,7 @@ type parsedArgs struct {
 	Message  string
 	Duration *int
 	Help     bool
+	Verbose  bool
 }
 
 func parseArgs(args []string) parsedArgs {
@@ -36,6 +37,8 @@ func parseArgs(args []string) parsedArgs {
 		case "--help", "-h":
 			result.Help = true
 			return result
+		case "--verbose", "-v":
+			result.Verbose = true
 		case "--from":
 			i++
 			if i < len(args) {
@@ -99,14 +102,18 @@ func readRuntimeFile(path string) (*runtimeInfo, error) {
 	return &info, nil
 }
 
-func healthCheck(host string, port int) bool {
+func healthCheck(host string, port int) error {
 	client := &http.Client{Timeout: 2 * time.Second}
-	resp, err := client.Get(fmt.Sprintf("http://%s:%d/health", host, port))
+	url := fmt.Sprintf("http://%s:%d/health", host, port)
+	resp, err := client.Get(url)
 	if err != nil {
-		return false
+		return err
 	}
 	resp.Body.Close()
-	return resp.StatusCode == 200
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("health endpoint returned HTTP %d", resp.StatusCode)
+	}
+	return nil
 }
 
 func notify(host string, port int, body map[string]any) (int, map[string]any, error) {
@@ -126,8 +133,6 @@ func notify(host string, port int, body map[string]any) (int, map[string]any, er
 	return resp.StatusCode, result, nil
 }
 
-const notRunning = "alertosaurus is not running. Start it with: alertosaurus"
-
 const helpText = `Usage: roar [options] <message>
 
 Send a notification to the Alertosaurus desktop app.
@@ -135,12 +140,14 @@ Send a notification to the Alertosaurus desktop app.
 Options:
   --from <name>       Sender name shown in the notification (default: current directory)
   --duration <ms>     How long the notification stays visible, in milliseconds
+  -v, --verbose       Show diagnostic details on failure
   -h, --help          Show this help message
 
 Examples:
   roar "build finished"
   roar --from deploy "staging is live"
-  roar --duration 10000 "tests failed"`
+  roar --duration 10000 "tests failed"
+  roar -v "hello"                          # show diagnostics if it fails`
 
 func run() int {
 	parsed := parseArgs(os.Args[1:])
@@ -156,14 +163,38 @@ func run() int {
 		return 1
 	}
 
-	info, err := readRuntimeFile(runtimePath())
+	rtPath := runtimePath()
+	if parsed.Verbose {
+		fmt.Fprintf(os.Stderr, "runtime file: %s\n", rtPath)
+	}
+
+	info, err := readRuntimeFile(rtPath)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, notRunning)
+		if os.IsNotExist(err) {
+			fmt.Fprintln(os.Stderr, "alertosaurus is not running (no runtime file found).")
+		} else {
+			fmt.Fprintf(os.Stderr, "alertosaurus is not running (cannot read runtime file: %s).\n", err)
+		}
+		fmt.Fprintln(os.Stderr, "Start it with: alertosaurus")
+		if parsed.Verbose {
+			fmt.Fprintf(os.Stderr, "  path: %s\n", rtPath)
+		}
 		return 1
 	}
 
-	if !healthCheck(info.Host, info.Port) {
-		fmt.Fprintln(os.Stderr, notRunning)
+	if parsed.Verbose {
+		fmt.Fprintf(os.Stderr, "found runtime: host=%s port=%d pid=%d started=%s\n",
+			info.Host, info.Port, info.Pid, info.StartedAt)
+	}
+
+	if err := healthCheck(info.Host, info.Port); err != nil {
+		fmt.Fprintf(os.Stderr, "Cannot reach alertosaurus at %s:%d — %s\n", info.Host, info.Port, err)
+		fmt.Fprintln(os.Stderr, "The app may have crashed, or a firewall may be blocking the connection.")
+		if parsed.Verbose {
+			fmt.Fprintf(os.Stderr, "  runtime file: %s\n", rtPath)
+			fmt.Fprintf(os.Stderr, "  recorded pid: %d\n", info.Pid)
+			fmt.Fprintf(os.Stderr, "  started at:   %s\n", info.StartedAt)
+		}
 		return 1
 	}
 
