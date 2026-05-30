@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.2](https://github.com/joCur/alertosaurus/compare/v1.1.1...v1.1.2) (2026-05-30)
+
+
+### Bug Fixes
+
+* prevent pet from falling off-screen on multi-monitor setups ([#13](https://github.com/joCur/alertosaurus/issues/13)) ([63d6443](https://github.com/joCur/alertosaurus/commit/63d6443650a802f83afb5693a41d35a2c4a9bea7))
+* unpack roar CLI binary from asar so installers can access it ([#12](https://github.com/joCur/alertosaurus/issues/12)) ([d9b0dc9](https://github.com/joCur/alertosaurus/commit/d9b0dc9265fbe4d218a8df74cf763c66afc903e3))
+
 ## [1.1.1](https://github.com/joCur/alertosaurus/compare/v1.1.0...v1.1.1) (2026-05-30)
 
 
