@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/joCur/alertosaurus/compare/v1.1.0...v1.1.1) (2026-05-30)
+
+
+### Bug Fixes
+
+* add Go setup to release workflow ([#10](https://github.com/joCur/alertosaurus/issues/10)) ([eb0f529](https://github.com/joCur/alertosaurus/commit/eb0f529a21ebb578903c95711f1f884e50bd31fd))
+
 ## [1.1.0](https://github.com/joCur/alertosaurus/compare/v1.0.2...v1.1.0) (2026-05-30)
 
 
