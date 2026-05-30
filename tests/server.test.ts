@@ -6,6 +6,7 @@ import fs from 'fs';
 import { createApp } from '../src/main/server';
 import { NotificationDb } from '../src/main/db';
 import { ToastQueue } from '../src/main/queue';
+import packageJson from '../package.json';
 
 describe('HTTP Server', () => {
   let db: NotificationDb;
@@ -135,7 +136,7 @@ describe('HTTP Server', () => {
         .expect(200);
 
       expect(res.body.status).toBe('ok');
-      expect(res.body.version).toBe('1.0.0');
+      expect(res.body.version).toBe(packageJson.version);
       expect(typeof res.body.uptime_s).toBe('number');
     });
   });
