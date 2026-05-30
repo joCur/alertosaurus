@@ -6,6 +6,7 @@ function onChannel(channel: string, cb: (...args: any[]) => void) {
 }
 
 contextBridge.exposeInMainWorld('alertosaurus', {
+  platform: process.platform,
   onSetState: (cb: (state: string) => void) => onChannel('pet:set-state', cb),
   onFalling: (cb: () => void) => onChannel('pet:falling', cb),
   onLanded: (cb: () => void) => onChannel('pet:landed', cb),
