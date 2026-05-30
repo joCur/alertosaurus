@@ -7,6 +7,8 @@ function onChannel(channel: string, cb: (...args: any[]) => void) {
 
 contextBridge.exposeInMainWorld('alertosaurus', {
   onSetState: (cb: (state: string) => void) => onChannel('pet:set-state', cb),
+  onFalling: (cb: () => void) => onChannel('pet:falling', cb),
+  onLanded: (cb: () => void) => onChannel('pet:landed', cb),
   onShowToast: (cb: (data: { caller: string; message: string; duration_ms: number; received_at: string }) => void) => onChannel('pet:show-toast', cb),
   onHideToast: (cb: () => void) => onChannel('pet:hide-toast', cb),
   onShowOverflow: (cb: (count: number) => void) => onChannel('pet:show-overflow', cb),

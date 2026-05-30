@@ -10,7 +10,7 @@
     "build:cli": "shx mkdir -p dist/cli && cd cli && go build -ldflags=\"-s -w\" -trimpath -o ../dist/cli/roar .",
     "build": "npm run build:main && npm run build:renderer && npm run build:copy && npm run build:cli",
     "start": "npm run build && electron .",
-    "test": "cd cli && go test ./...",
+    "test": "vitest run && cd cli && go test ./...",
     "dist": "npm run build && electron-builder"
   },
   "engines": {
@@ -22,7 +22,8 @@
   "dependencies": {
     "better-sqlite3": "^12.10.0",
     "express": "^5.2.1",
-    "express-rate-limit": "^8.5.2"
+    "express-rate-limit": "^8.5.2",
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
     "@electron/rebuild": "^4.0.4",
@@ -31,7 +32,10 @@
     "@types/node": "^25.9.1",
     "electron": "^33.4.11",
     "electron-builder": "^26.8.1",
+    "@types/supertest": "^7.2.0",
     "shx": "^0.4.0",
-    "typescript": "^6.0.3"
+    "supertest": "^7.2.2",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.7"
   }
 }

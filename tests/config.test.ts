@@ -23,6 +23,12 @@ describe('ConfigManager', () => {
     expect(config).toEqual(DEFAULT_CONFIG);
   });
 
+  it('includes gravity defaults', () => {
+    const config = manager.load();
+    expect(config.gravity_enabled).toBe(true);
+    expect(config.edge_threshold).toBe(30);
+  });
+
   it('saves and loads config', () => {
     const config = { ...DEFAULT_CONFIG, port: 9999 };
     manager.save(config);

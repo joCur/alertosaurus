@@ -250,6 +250,32 @@ api.onSetState((state: string) => {
   goToState(state as 'idle' | 'sleeping' | 'roaring');
 });
 
+let isFalling = false;
+
+api.onFalling(() => {
+  isFalling = true;
+  playSegments([], { sheetKey: 'dragging', frames: range(0, 15) });
+});
+
+api.onLanded(() => {
+  isFalling = false;
+
+  spriteContainer.classList.add('squish-impact');
+  setTimeout(() => {
+    spriteContainer.classList.remove('squish-impact');
+    spriteContainer.classList.add('squish-stretch');
+    setTimeout(() => {
+      spriteContainer.classList.remove('squish-stretch');
+      spriteContainer.classList.add('squish-settle');
+      setTimeout(() => {
+        spriteContainer.classList.remove('squish-settle');
+        goToState(stateBeforeDrag ?? 'idle');
+        stateBeforeDrag = null;
+      }, 120);
+    }, 100);
+  }, 80);
+});
+
 // --- Toast ---
 
 function relativeTime(iso: string): string {
@@ -344,10 +370,8 @@ document.addEventListener('mousemove', (e) => {
 document.addEventListener('mouseup', () => {
   if (!isDragging) return;
   isDragging = false;
-  api.dragEnd();
-  if (didDrag && stateBeforeDrag) {
-    goToState(stateBeforeDrag);
-    stateBeforeDrag = null;
+  if (didDrag) {
+    api.dragEnd();
   }
 });
 
