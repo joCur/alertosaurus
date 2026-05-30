@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { luminance, findLandingSurface } from '../src/main/gravity';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { luminance, findLandingSurface, createGravityLoop, GRAVITY, MAX_FALL_SPEED, TICK_INTERVAL } from '../src/main/gravity';
 
 describe('luminance', () => {
   it('returns 0 for black', () => {
@@ -75,5 +75,52 @@ describe('findLandingSurface', () => {
       [50, 50, 50],      // edge at row 3
     ]);
     expect(findLandingSurface(buf, 4, 4, 4, 30)).toBe(1);
+  });
+});
+
+describe('createGravityLoop', () => {
+  beforeEach(() => { vi.useFakeTimers(); });
+  afterEach(() => { vi.useRealTimers(); });
+
+  it('calls onTick with increasing y positions', () => {
+    const ticks: number[] = [];
+    createGravityLoop(100, 300, (y) => ticks.push(y), () => {});
+    vi.advanceTimersByTime(TICK_INTERVAL * 3);
+    expect(ticks.length).toBe(3);
+    expect(ticks[0]).toBeGreaterThan(100);
+    expect(ticks[1]).toBeGreaterThan(ticks[0]);
+    expect(ticks[2]).toBeGreaterThan(ticks[1]);
+  });
+
+  it('calls onLand and stops when reaching target', () => {
+    const landed = vi.fn();
+    const ticks: number[] = [];
+    createGravityLoop(100, 110, (y) => ticks.push(y), landed);
+    vi.advanceTimersByTime(TICK_INTERVAL * 50);
+    expect(landed).toHaveBeenCalledOnce();
+    expect(landed).toHaveBeenCalledWith(110);
+    const tickCountAtLanding = ticks.length;
+    vi.advanceTimersByTime(TICK_INTERVAL * 10);
+    expect(ticks.length).toBe(tickCountAtLanding);
+  });
+
+  it('respects terminal velocity', () => {
+    const ticks: number[] = [];
+    createGravityLoop(0, 10000, (y) => ticks.push(y), () => {});
+    vi.advanceTimersByTime(TICK_INTERVAL * 100);
+    for (let i = 2; i < ticks.length; i++) {
+      const delta = ticks[i] - ticks[i - 1];
+      expect(delta).toBeLessThanOrEqual(MAX_FALL_SPEED + 0.01);
+    }
+  });
+
+  it('can be cancelled', () => {
+    const ticks: number[] = [];
+    const cancel = createGravityLoop(100, 500, (y) => ticks.push(y), () => {});
+    vi.advanceTimersByTime(TICK_INTERVAL * 2);
+    const countBefore = ticks.length;
+    cancel();
+    vi.advanceTimersByTime(TICK_INTERVAL * 10);
+    expect(ticks.length).toBe(countBefore);
   });
 });

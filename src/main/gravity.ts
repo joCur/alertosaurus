@@ -56,3 +56,30 @@ export function findLandingSurface(
 
   return null;
 }
+
+export function createGravityLoop(
+  startY: number,
+  targetY: number,
+  onTick: (y: number) => void,
+  onLand: (y: number) => void,
+): () => void {
+  let y = startY;
+  let vy = 0;
+
+  const timer = setInterval(() => {
+    vy = Math.min(vy + GRAVITY, MAX_FALL_SPEED);
+    y += vy;
+
+    if (y >= targetY) {
+      y = targetY;
+      clearInterval(timer);
+      onTick(y);
+      onLand(y);
+      return;
+    }
+
+    onTick(Math.round(y));
+  }, TICK_INTERVAL);
+
+  return () => clearInterval(timer);
+}
