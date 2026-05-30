@@ -375,9 +375,10 @@ document.addEventListener('mouseup', () => {
   }
 });
 
-// --- Pet click (open hub) ---
+// --- Pet right-click (open hub) ---
 
-spriteContainer.addEventListener('click', () => {
+spriteContainer.addEventListener('contextmenu', (e) => {
+  e.preventDefault();
   if (didDrag) { didDrag = false; return; }
   if (!toastContainer.classList.contains('hidden')) return;
   api.petClicked();
