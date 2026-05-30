@@ -24,6 +24,7 @@ type parsedArgs struct {
 	From     string
 	Message  string
 	Duration *int
+	Help     bool
 }
 
 func parseArgs(args []string) parsedArgs {
@@ -32,6 +33,9 @@ func parseArgs(args []string) parsedArgs {
 	var positional []string
 	for i < len(args) {
 		switch args[i] {
+		case "--help", "-h":
+			result.Help = true
+			return result
 		case "--from":
 			i++
 			if i < len(args) {
@@ -124,11 +128,31 @@ func notify(host string, port int, body map[string]any) (int, map[string]any, er
 
 const notRunning = "alertosaurus is not running. Start it with: alertosaurus"
 
+const helpText = `Usage: roar [options] <message>
+
+Send a notification to the Alertosaurus desktop app.
+
+Options:
+  --from <name>       Sender name shown in the notification (default: current directory)
+  --duration <ms>     How long the notification stays visible, in milliseconds
+  -h, --help          Show this help message
+
+Examples:
+  roar "build finished"
+  roar --from deploy "staging is live"
+  roar --duration 10000 "tests failed"`
+
 func run() int {
 	parsed := parseArgs(os.Args[1:])
 
+	if parsed.Help {
+		fmt.Println(helpText)
+		return 0
+	}
+
 	if parsed.Message == "" {
-		fmt.Fprintln(os.Stderr, "Usage: roar [--from <name>] [--duration <ms>] <message>")
+		fmt.Fprintln(os.Stderr, "Usage: roar [options] <message>")
+		fmt.Fprintln(os.Stderr, "Run 'roar --help' for more information.")
 		return 1
 	}
 

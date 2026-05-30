@@ -69,6 +69,30 @@ func TestParseArgs(t *testing.T) {
 			t.Errorf("expected 'hello world', got %q", result.Message)
 		}
 	})
+
+	t.Run("parses --help flag", func(t *testing.T) {
+		result := parseArgs([]string{"--help"})
+		if !result.Help {
+			t.Error("expected Help=true")
+		}
+	})
+
+	t.Run("parses -h flag", func(t *testing.T) {
+		result := parseArgs([]string{"-h"})
+		if !result.Help {
+			t.Error("expected Help=true")
+		}
+	})
+
+	t.Run("help flag stops parsing remaining args", func(t *testing.T) {
+		result := parseArgs([]string{"--from", "test", "--help", "message"})
+		if !result.Help {
+			t.Error("expected Help=true")
+		}
+		if result.Message != "" {
+			t.Errorf("expected empty message after --help, got %q", result.Message)
+		}
+	})
 }
 
 func TestReadRuntimeFile(t *testing.T) {
