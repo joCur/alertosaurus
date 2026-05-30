@@ -1,2 +1,2 @@
 #!/bin/bash
-ln -sf "/Applications/Alertosaurus.app/Contents/Resources/app/dist/cli/roar" /usr/local/bin/roar
+ln -sf "/Applications/Alertosaurus.app/Contents/Resources/app.asar.unpacked/dist/cli/roar" /usr/local/bin/roar

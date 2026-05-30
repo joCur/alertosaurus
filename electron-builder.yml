@@ -5,6 +5,7 @@ directories:
 
 asarUnpack:
   - "**/node_modules/better-sqlite3/**"
+  - "dist/cli/**/*"
 
 mac:
   target: pkg
