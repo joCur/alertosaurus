@@ -2,10 +2,6 @@
   "name": "alertosaurus",
   "version": "1.0.0",
   "description": "Desktop notification hub with a pixel-art dinosaur",
-  "author": {
-    "name": "Jonas Curth",
-    "email": "curth@mediainterface.de"
-  },
   "main": "dist/main/index.js",
   "bin": {
     "roar": "./dist/cli/index.js"
@@ -21,7 +17,7 @@
     "dist": "npm run build && electron-builder"
   },
   "keywords": [],
-  "author": "",
+  "author": "Jonas Curth <curth@mediainterface.de>",
   "license": "ISC",
   "dependencies": {
     "better-sqlite3": "^12.10.0",
