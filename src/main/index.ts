@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, screen } from 'electron';
+import { app, BrowserWindow, desktopCapturer, ipcMain, screen, systemPreferences } from 'electron';
 import path from 'path';
 import { ConfigManager } from './config';
 import { NotificationDb } from './db';
@@ -6,6 +6,15 @@ import { ToastQueue } from './queue';
 import { PetStateMachine } from './state-machine';
 import { createApp } from './server';
 import http from 'http';
+import sharp from 'sharp';
+import {
+  findLandingSurface,
+  feetScreenY,
+  targetWindowY as computeTargetWindowY,
+  scanX as computeScanX,
+  createGravityLoop,
+  SPRITE_DISPLAY_WIDTH,
+} from './gravity';
 
 let petWindow: BrowserWindow | null = null;
 let hubWindow: BrowserWindow | null = null;
@@ -19,8 +28,10 @@ const stateMachine = new PetStateMachine();
 
 let idleTimer: ReturnType<typeof setTimeout> | null = null;
 let toastTimer: ReturnType<typeof setTimeout> | null = null;
+let cancelGravity: (() => void) | null = null;
 
 function sendPetState(state: string) {
+  if (cancelGravity) return;
   petWindow?.webContents.send('pet:set-state', state);
 }
 
@@ -137,6 +148,92 @@ function createHubWindow() {
   });
 }
 
+async function captureAndFall() {
+  if (!petWindow) return;
+
+  const [winX, winY] = petWindow.getPosition();
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const { height: screenH } = primaryDisplay.workAreaSize;
+  const displaySize = primaryDisplay.size;
+
+  const feetY = feetScreenY(winY);
+  const stripX = computeScanX(winX);
+  const stripHeight = screenH - feetY;
+
+  if (stripHeight <= 1) {
+    config.pet_position = { x: winX, y: winY };
+    configManager.save(config);
+    petWindow.webContents.send('pet:landed');
+    return;
+  }
+
+  let landingScreenY = screenH;
+
+  if (process.platform !== 'darwin' ||
+      systemPreferences.getMediaAccessStatus('screen') === 'granted') {
+    try {
+      const sources = await desktopCapturer.getSources({
+        types: ['screen'],
+        thumbnailSize: { width: displaySize.width, height: displaySize.height },
+      });
+
+      if (sources.length > 0) {
+        const thumbnail = sources[0].thumbnail.toPNG();
+        const clampedX = Math.max(0, Math.min(stripX, displaySize.width - SPRITE_DISPLAY_WIDTH));
+        const clampedWidth = Math.min(SPRITE_DISPLAY_WIDTH, displaySize.width - clampedX);
+        const clampedHeight = Math.min(stripHeight, displaySize.height - feetY);
+
+        if (clampedWidth > 0 && clampedHeight > 0) {
+          const { data, info } = await sharp(thumbnail)
+            .extract({
+              left: clampedX,
+              top: feetY,
+              width: clampedWidth,
+              height: clampedHeight,
+            })
+            .raw()
+            .toBuffer({ resolveWithObject: true });
+
+          const edgeRow = findLandingSurface(data, info.width, info.height, info.channels, config.edge_threshold);
+          if (edgeRow !== null) {
+            landingScreenY = feetY + edgeRow;
+          }
+        }
+      }
+    } catch {
+      // Capture failed — fall to screen bottom
+    }
+  }
+
+  const targetWinY = computeTargetWindowY(landingScreenY);
+
+  if (targetWinY <= winY) {
+    config.pet_position = { x: winX, y: winY };
+    configManager.save(config);
+    petWindow.webContents.send('pet:landed');
+    return;
+  }
+
+  petWindow.webContents.send('pet:falling');
+
+  cancelGravity = createGravityLoop(
+    winY,
+    targetWinY,
+    (y) => {
+      petWindow?.setPosition(winX, y);
+    },
+    (y) => {
+      cancelGravity = null;
+      petWindow?.webContents.send('pet:landed');
+      if (stateMachine.state === 'roaring') {
+        sendPetState('roaring');
+      }
+      config.pet_position = { x: winX, y };
+      configManager.save(config);
+    },
+  );
+}
+
 function setupIPC() {
   ipcMain.on('pet:state-reached', (_e: Electron.IpcMainEvent, state: string) => {
     if (state === 'roaring') {
@@ -163,15 +260,24 @@ function setupIPC() {
 
   ipcMain.on('pet:dragging', (_e: Electron.IpcMainEvent, dx: number, dy: number) => {
     if (!petWindow) return;
+    if (cancelGravity) {
+      cancelGravity();
+      cancelGravity = null;
+    }
     const [x, y] = petWindow.getPosition();
     petWindow.setPosition(x + dx, y + dy);
   });
 
   ipcMain.on('pet:drag-end', () => {
     if (!petWindow) return;
-    const [x, y] = petWindow.getPosition();
-    config.pet_position = { x, y };
-    configManager.save(config);
+    if (config.gravity_enabled) {
+      captureAndFall();
+    } else {
+      const [x, y] = petWindow.getPosition();
+      config.pet_position = { x, y };
+      configManager.save(config);
+      petWindow.webContents.send('pet:landed');
+    }
   });
 
   ipcMain.on('set-ignore-mouse-events', (_e: Electron.IpcMainEvent, ignore: boolean, opts?: { forward: boolean }) => {
@@ -216,6 +322,7 @@ app.whenReady().then(() => {
 });
 
 app.on('will-quit', () => {
+  if (cancelGravity) { cancelGravity(); cancelGravity = null; }
   configManager.removeRuntime();
   httpServer?.close();
   db.close();
