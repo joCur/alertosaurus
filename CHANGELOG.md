@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.2.0](https://github.com/joCur/alertosaurus/compare/v1.1.2...v1.2.0) (2026-05-30)
+
+
+### Features
+
+* add settings tab with gravity toggle ([#17](https://github.com/joCur/alertosaurus/issues/17)) ([18e494f](https://github.com/joCur/alertosaurus/commit/18e494fa9411d31e1f814c7d2c1d072b40d4b6d2))
+* add settings tab with gravity toggle to hub window ([18e494f](https://github.com/joCur/alertosaurus/commit/18e494fa9411d31e1f814c7d2c1d072b40d4b6d2))
+
+
+### Bug Fixes
+
+* Windows roar.exe install + add CLI help command ([#15](https://github.com/joCur/alertosaurus/issues/15)) ([8e17675](https://github.com/joCur/alertosaurus/commit/8e1767535fce642ac3643137e4699f949bda6e5a))
+
 ## [1.1.2](https://github.com/joCur/alertosaurus/compare/v1.1.1...v1.1.2) (2026-05-30)
 
 
