@@ -195,8 +195,9 @@ async function createTray() {
   const trimmed = sharp(iconPath).trim();
   const resizeOpts = { fit: 'contain' as const, background: { r: 0, g: 0, b: 0, alpha: 0 } };
 
-  const icon = nativeImage.createEmpty();
+  let icon: Electron.NativeImage;
   if (process.platform === 'darwin') {
+    icon = nativeImage.createEmpty();
     const buf1x = await trimmed.clone().resize(22, 22, resizeOpts).png().toBuffer();
     const buf2x = await trimmed.clone().resize(44, 44, resizeOpts).png().toBuffer();
     icon.addRepresentation({ buffer: buf1x, width: 22, height: 22, scaleFactor: 1 });
@@ -204,7 +205,7 @@ async function createTray() {
   } else {
     const buf1x = await trimmed.clone().resize(24, 24, resizeOpts).png().toBuffer();
     const buf2x = await trimmed.clone().resize(48, 48, resizeOpts).png().toBuffer();
-    icon.addRepresentation({ buffer: buf1x, width: 24, height: 24, scaleFactor: 1 });
+    icon = nativeImage.createFromBuffer(buf1x, { width: 24, height: 24 });
     icon.addRepresentation({ buffer: buf2x, width: 24, height: 24, scaleFactor: 2 });
   }
 
