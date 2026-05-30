@@ -93,6 +93,30 @@ main {
   line-height: 1.4;
 }
 
+.setting-select {
+  appearance: none;
+  background: #313244;
+  color: #cdd6f4;
+  border: 1px solid #45475a;
+  border-radius: 6px;
+  padding: 6px 28px 6px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  flex-shrink: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236c7086'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+
+.setting-select:hover {
+  background-color: #45475a;
+}
+
+.setting-select:focus {
+  outline: none;
+  border-color: #f9e2af;
+}
+
 .toggle {
   appearance: none;
   width: 40px;

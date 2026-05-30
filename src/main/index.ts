@@ -399,13 +399,19 @@ function setupIPC() {
   });
 
   ipcMain.handle('hub:get-config', () => {
-    return { gravity_enabled: config.gravity_enabled };
+    return { gravity_enabled: config.gravity_enabled, idle_timeout_ms: config.idle_timeout_ms };
   });
 
   ipcMain.handle('hub:set-config-value', (_e: Electron.IpcMainInvokeEvent, key: string, value: unknown) => {
     if (key === 'gravity_enabled' && typeof value === 'boolean') {
       config.gravity_enabled = value;
       configManager.save(config);
+      return true;
+    }
+    if (key === 'idle_timeout_ms' && typeof value === 'number') {
+      config.idle_timeout_ms = value;
+      configManager.save(config);
+      resetIdleTimer();
       return true;
     }
     return false;
