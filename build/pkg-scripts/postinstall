@@ -1,0 +1,3 @@
+#!/bin/bash
+ln -sf "/Applications/Alertosaurus.app/Contents/Resources/app/dist/cli/index.js" /usr/local/bin/roar
+chmod +x /usr/local/bin/roar

@@ -1,0 +1,42 @@
+appId: com.alertosaurus.app
+productName: Alertosaurus
+directories:
+  output: release
+
+asarUnpack:
+  - "**/node_modules/better-sqlite3/**"
+
+mac:
+  target: pkg
+  category: public.app-category.developer-tools
+
+pkg:
+  scripts: build/pkg-scripts
+
+linux:
+  target:
+    - AppImage
+    - deb
+  category: Development
+  executableName: alertosaurus
+
+deb:
+  afterInstall: build/linux-after-install.sh
+  afterRemove: build/linux-after-remove.sh
+
+win:
+  target: nsis
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  include: build/installer.nsh
+
+files:
+  - dist/**/*
+  - assets/**/*
+  - "!**/*.ts"
+  - "!tests/**"
+
+extraMetadata:
+  main: dist/main/index.js
