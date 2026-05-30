@@ -56,6 +56,26 @@ describe('NotificationDb', () => {
     expect(db.getAll()).toHaveLength(0);
   });
 
+  it('deletes a single notification by id', () => {
+    db.insert({ caller: 'a', message: 'one', duration_ms: 5000 });
+    const { id } = db.insert({ caller: 'b', message: 'two', duration_ms: 5000 });
+    db.insert({ caller: 'c', message: 'three', duration_ms: 5000 });
+
+    const deleted = db.delete(id);
+    expect(deleted).toBe(true);
+
+    const all = db.getAll();
+    expect(all).toHaveLength(2);
+    expect(all.map(n => n.caller)).toEqual(['c', 'a']);
+  });
+
+  it('returns false when deleting a non-existent id', () => {
+    db.insert({ caller: 'a', message: 'one', duration_ms: 5000 });
+    const deleted = db.delete('non-existent-id');
+    expect(deleted).toBe(false);
+    expect(db.getAll()).toHaveLength(1);
+  });
+
   it('handles empty database', () => {
     expect(db.getAll()).toEqual([]);
   });

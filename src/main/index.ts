@@ -331,6 +331,10 @@ function setupIPC() {
     return { host: config.host, port: config.port };
   });
 
+  ipcMain.handle('hub:delete-notification', (_e: Electron.IpcMainInvokeEvent, id: string) => {
+    return db.delete(id);
+  });
+
   ipcMain.handle('hub:clear-history', () => {
     db.clear();
     return true;

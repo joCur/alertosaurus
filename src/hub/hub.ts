@@ -48,7 +48,7 @@ function formatDay(iso: string): string {
   return d.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' });
 }
 
-interface NotificationItem { caller: string; message: string; received_at: string; }
+interface NotificationItem { id: string; caller: string; message: string; received_at: string; }
 
 function render(notifications: NotificationItem[]) {
   listEl.innerHTML = '';
@@ -94,6 +94,16 @@ function render(notifications: NotificationItem[]) {
       time.className = 'notification-time';
       time.textContent = formatTime(n.received_at);
       row.appendChild(time);
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'notification-delete';
+      deleteBtn.textContent = '×';
+      deleteBtn.title = 'Delete';
+      deleteBtn.addEventListener('click', async () => {
+        await api.deleteNotification(n.id);
+        await loadNotifications();
+      });
+      row.appendChild(deleteBtn);
 
       group.appendChild(row);
     }
