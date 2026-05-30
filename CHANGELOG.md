@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.3.0](https://github.com/joCur/alertosaurus/compare/v1.2.0...v1.3.0) (2026-05-30)
+
+
+### Features
+
+* add single notification deletion ([#18](https://github.com/joCur/alertosaurus/issues/18)) ([8b625cf](https://github.com/joCur/alertosaurus/commit/8b625cf1b45231b016acc16e85e90d5d4532cad2))
+* add system tray icon with context menu ([#19](https://github.com/joCur/alertosaurus/issues/19)) ([2c3d55b](https://github.com/joCur/alertosaurus/commit/2c3d55b5324e58bbf1781b52bdd1c78e02eb66d0))
+* add system tray with app icon and dock hiding ([2c3d55b](https://github.com/joCur/alertosaurus/commit/2c3d55b5324e58bbf1781b52bdd1c78e02eb66d0))
+* custom title bar with native window controls ([#20](https://github.com/joCur/alertosaurus/issues/20)) ([0bc2824](https://github.com/joCur/alertosaurus/commit/0bc2824aba0e65914f58776b2e34b50cd313b973))
+* use custom title bar with native window controls on hub window ([0bc2824](https://github.com/joCur/alertosaurus/commit/0bc2824aba0e65914f58776b2e34b50cd313b973))
+
 ## [1.2.0](https://github.com/joCur/alertosaurus/compare/v1.1.2...v1.2.0) (2026-05-30)
 
 
