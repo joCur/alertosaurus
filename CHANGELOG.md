@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.4.1](https://github.com/joCur/alertosaurus/compare/v1.4.0...v1.4.1) (2026-05-30)
+
+
+### Bug Fixes
+
+* read tray icon via fs so it works inside asar on Windows ([#26](https://github.com/joCur/alertosaurus/issues/26)) ([d19c8be](https://github.com/joCur/alertosaurus/commit/d19c8bea2ccda722cd2dbef99c11d774a8cb83c4))
+* show specific error details when roar cannot reach alertosaurus ([#28](https://github.com/joCur/alertosaurus/issues/28)) ([e49849f](https://github.com/joCur/alertosaurus/commit/e49849f14d6d813d16e37b378a231c7a8f72e532))
+
 ## [1.4.0](https://github.com/joCur/alertosaurus/compare/v1.3.0...v1.4.0) (2026-05-30)
 
 
