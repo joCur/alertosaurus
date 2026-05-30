@@ -1,5 +1,6 @@
 !macro customInstall
-  CopyFiles "$INSTDIR\resources\app.asar.unpacked\dist\cli\roar.exe" "$INSTDIR\roar.exe"
+  CopyFiles "$INSTDIR\resources\app.asar.unpacked\dist\cli\roar" "$INSTDIR\"
+  Rename "$INSTDIR\roar" "$INSTDIR\roar.exe"
 
   ; Add install directory to user PATH so 'roar' works from any terminal
   FileOpen $0 "$PLUGINSDIR\add-path.ps1" w
