@@ -8,6 +8,7 @@ const endpointEl = document.getElementById('endpoint-info')!;
 const clearBtn = document.getElementById('clear-btn')!;
 const quitBtn = document.getElementById('quit-btn')!;
 const gravityToggle = document.getElementById('gravity-toggle') as HTMLInputElement;
+const sleepTimerSelect = document.getElementById('sleep-timer-select') as HTMLSelectElement;
 
 const tabNotifications = document.getElementById('tab-notifications')!;
 const tabSettings = document.getElementById('tab-settings')!;
@@ -128,10 +129,15 @@ async function loadEndpoint() {
 async function loadSettings() {
   const cfg = await api.getConfig();
   gravityToggle.checked = cfg.gravity_enabled;
+  sleepTimerSelect.value = String(cfg.idle_timeout_ms);
 }
 
 gravityToggle.addEventListener('change', () => {
   api.setConfigValue('gravity_enabled', gravityToggle.checked);
+});
+
+sleepTimerSelect.addEventListener('change', () => {
+  api.setConfigValue('idle_timeout_ms', Number(sleepTimerSelect.value));
 });
 
 // --- Actions ---
