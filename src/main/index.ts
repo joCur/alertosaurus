@@ -14,6 +14,8 @@ import {
   SPRITE_DISPLAY_WIDTH,
   BODY_PADDING,
   SPRITE_GROUND_OFFSET,
+  PET_WINDOW_WIDTH,
+  PET_WINDOW_HEIGHT,
 } from './gravity';
 
 let petWindow: BrowserWindow | null = null;
@@ -96,13 +98,28 @@ function onNotify() {
 const expressApp = createApp(db, queue, onNotify);
 let httpServer: http.Server;
 
-function createPetWindow() {
-  const { x, y } = config.pet_position;
+function isPositionOnScreen(x: number, y: number): boolean {
+  const displays = screen.getAllDisplays();
+  for (const display of displays) {
+    const { x: dx, y: dy, width, height } = display.workArea;
+    if (x >= dx && x < dx + width && y >= dy && y < dy + height) {
+      return true;
+    }
+  }
+  return false;
+}
 
-  const primaryDisplay = screen.getPrimaryDisplay();
-  const { width: screenW, height: screenH } = primaryDisplay.workAreaSize;
-  const safeX = Math.min(Math.max(0, x), screenW - 100);
-  const safeY = Math.min(Math.max(0, y), screenH - 100);
+function createPetWindow() {
+  let { x, y } = config.pet_position;
+
+  if (!isPositionOnScreen(x, y)) {
+    const primary = screen.getPrimaryDisplay().workArea;
+    x = primary.x + Math.floor((primary.width - PET_WINDOW_WIDTH) / 2);
+    y = primary.y + Math.floor((primary.height - PET_WINDOW_HEIGHT) / 2);
+  }
+
+  const safeX = x;
+  const safeY = y;
 
   petWindow = new BrowserWindow({
     width: 320,
@@ -155,9 +172,11 @@ async function captureAndFall() {
   const winX = bounds.x;
   const winY = bounds.y;
   const winH = bounds.height;
-  const primaryDisplay = screen.getPrimaryDisplay();
-  const workArea = primaryDisplay.workArea;
-  const displaySize = primaryDisplay.size;
+  const centerX = winX + Math.floor(bounds.width / 2);
+  const centerY = winY + Math.floor(bounds.height / 2);
+  const currentDisplay = screen.getDisplayNearestPoint({ x: centerX, y: centerY });
+  const workArea = currentDisplay.workArea;
+  const displaySize = currentDisplay.size;
   const screenBottom = workArea.y + workArea.height;
 
   const feetY = winY + winH - BODY_PADDING - SPRITE_GROUND_OFFSET;
@@ -165,7 +184,10 @@ async function captureAndFall() {
   const stripHeight = screenBottom - feetY;
 
   if (stripHeight <= 1) {
-    config.pet_position = { x: winX, y: winY };
+    const bottomY = screenBottom - winH + BODY_PADDING + SPRITE_GROUND_OFFSET;
+    const clampedY = Math.min(winY, bottomY);
+    petWindow.setBounds({ x: winX, y: clampedY, width: bounds.width, height: bounds.height });
+    config.pet_position = { x: winX, y: clampedY };
     configManager.save(config);
     petWindow.webContents.send('pet:landed');
     return;
@@ -183,16 +205,20 @@ async function captureAndFall() {
       });
       petWindow.setContentProtection(false);
 
-      if (sources.length > 0) {
-        const thumbnail = sources[0].thumbnail.toPNG();
+      const displayId = String(currentDisplay.id);
+      const source = sources.find(s => s.display_id === displayId) || sources[0];
+      if (source) {
+        const thumbnail = source.thumbnail.toPNG();
         const imgMeta = await sharp(thumbnail).metadata();
         const imgW = imgMeta.width!;
         const imgH = imgMeta.height!;
         const scaleX = imgW / displaySize.width;
         const scaleY = imgH / displaySize.height;
 
-        const cropLeft = Math.round(Math.max(0, Math.min(stripX, displaySize.width - SPRITE_DISPLAY_WIDTH)) * scaleX);
-        const cropTop = Math.round(feetY * scaleY);
+        const relStripX = stripX - currentDisplay.bounds.x;
+        const relFeetY = feetY - currentDisplay.bounds.y;
+        const cropLeft = Math.round(Math.max(0, Math.min(relStripX, displaySize.width - SPRITE_DISPLAY_WIDTH)) * scaleX);
+        const cropTop = Math.round(relFeetY * scaleY);
         const cropWidth = Math.min(Math.round(SPRITE_DISPLAY_WIDTH * scaleX), imgW - cropLeft);
         const cropHeight = Math.min(Math.round(stripHeight * scaleY), imgH - cropTop);
 
