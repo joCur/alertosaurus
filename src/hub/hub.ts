@@ -6,6 +6,31 @@ const emptyEl = document.getElementById('empty-state')!;
 const endpointEl = document.getElementById('endpoint-info')!;
 const clearBtn = document.getElementById('clear-btn')!;
 const quitBtn = document.getElementById('quit-btn')!;
+const gravityToggle = document.getElementById('gravity-toggle') as HTMLInputElement;
+
+const tabNotifications = document.getElementById('tab-notifications')!;
+const tabSettings = document.getElementById('tab-settings')!;
+const tabs = document.querySelectorAll<HTMLButtonElement>('#tabs .tab');
+
+// --- Tabs ---
+
+const tabPanels: Record<string, HTMLElement> = {
+  notifications: tabNotifications,
+  settings: tabSettings,
+};
+
+tabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    const target = tab.dataset.tab!;
+    tabs.forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    for (const [key, panel] of Object.entries(tabPanels)) {
+      panel.classList.toggle('hidden', key !== target);
+    }
+  });
+});
+
+// --- Notifications ---
 
 function formatTime(iso: string): string {
   const d = new Date(iso);
@@ -87,6 +112,19 @@ async function loadEndpoint() {
   endpointEl.textContent = `Listening on ${info.host}:${info.port}`;
 }
 
+// --- Settings ---
+
+async function loadSettings() {
+  const cfg = await api.getConfig();
+  gravityToggle.checked = cfg.gravity_enabled;
+}
+
+gravityToggle.addEventListener('change', () => {
+  api.setConfigValue('gravity_enabled', gravityToggle.checked);
+});
+
+// --- Actions ---
+
 clearBtn.addEventListener('click', async () => {
   if (!confirm('Clear all notification history?')) return;
   await api.clearHistory();
@@ -103,3 +141,4 @@ api.onNotificationsUpdated(() => {
 
 loadNotifications();
 loadEndpoint();
+loadSettings();

@@ -25,6 +25,8 @@ contextBridge.exposeInMainWorld('alertosaurus', {
   getNotifications: () => ipcRenderer.invoke('hub:get-notifications'),
   getEndpointInfo: () => ipcRenderer.invoke('hub:get-endpoint-info'),
   clearHistory: () => ipcRenderer.invoke('hub:clear-history'),
+  getConfig: () => ipcRenderer.invoke('hub:get-config'),
+  setConfigValue: (key: string, value: unknown) => ipcRenderer.invoke('hub:set-config-value', key, value),
   quit: () => ipcRenderer.send('hub:quit'),
   onNotificationsUpdated: (cb: () => void) => onChannel('hub:updated', cb),
 });

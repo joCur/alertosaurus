@@ -11,7 +11,6 @@ body {
 
 header {
   padding: 16px 20px;
-  border-bottom: 1px solid #313244;
 }
 
 header h1 {
@@ -26,10 +25,99 @@ header h1 {
   font-family: 'SF Mono', 'Consolas', monospace;
 }
 
+#tabs {
+  display: flex;
+  padding: 0 20px;
+  border-bottom: 1px solid #313244;
+}
+
+.tab {
+  background: none;
+  border: none;
+  color: #6c7086;
+  font-size: 13px;
+  padding: 8px 16px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.tab:hover {
+  color: #cdd6f4;
+}
+
+.tab.active {
+  color: #f9e2af;
+  border-bottom-color: #f9e2af;
+}
+
 main {
   flex: 1;
   overflow-y: auto;
   padding: 0;
+}
+
+.hidden { display: none; }
+
+.settings-group {
+  padding: 16px 20px;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  cursor: pointer;
+}
+
+.setting-info {
+  flex: 1;
+  margin-right: 16px;
+}
+
+.setting-label {
+  font-size: 14px;
+  color: #cdd6f4;
+  margin-bottom: 2px;
+}
+
+.setting-description {
+  font-size: 12px;
+  color: #6c7086;
+  line-height: 1.4;
+}
+
+.toggle {
+  appearance: none;
+  width: 40px;
+  height: 22px;
+  background: #45475a;
+  border-radius: 11px;
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.toggle::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  background: #cdd6f4;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.toggle:checked {
+  background: #a6e3a1;
+}
+
+.toggle:checked::after {
+  transform: translateX(18px);
 }
 
 #empty-state {
@@ -38,8 +126,6 @@ main {
   padding: 40px 20px;
   font-size: 14px;
 }
-
-#empty-state.hidden { display: none; }
 
 #empty-state code {
   background: #313244;

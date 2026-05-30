@@ -336,6 +336,19 @@ function setupIPC() {
     return true;
   });
 
+  ipcMain.handle('hub:get-config', () => {
+    return { gravity_enabled: config.gravity_enabled };
+  });
+
+  ipcMain.handle('hub:set-config-value', (_e: Electron.IpcMainInvokeEvent, key: string, value: unknown) => {
+    if (key === 'gravity_enabled' && typeof value === 'boolean') {
+      config.gravity_enabled = value;
+      configManager.save(config);
+      return true;
+    }
+    return false;
+  });
+
   ipcMain.on('hub:quit', () => {
     app.quit();
   });
