@@ -13,6 +13,8 @@ export interface Config {
   host: string;
   idle_timeout_ms: number;
   pet_position: { x: number; y: number };
+  gravity_enabled: boolean;
+  edge_threshold: number;
 }
 
 export interface RuntimeInfo {
@@ -27,4 +29,6 @@ export const DEFAULT_CONFIG: Config = {
   host: '127.0.0.1',
   idle_timeout_ms: 30_000,
   pet_position: { x: 100, y: 100 },
+  gravity_enabled: true,
+  edge_threshold: 30,
 };
