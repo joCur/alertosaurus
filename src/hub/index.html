@@ -10,9 +10,26 @@
     <h1>Alertosaurus</h1>
     <div id="endpoint-info"></div>
   </header>
+  <nav id="tabs">
+    <button class="tab active" data-tab="notifications">Notifications</button>
+    <button class="tab" data-tab="settings">Settings</button>
+  </nav>
   <main>
-    <div id="notification-list"></div>
-    <div id="empty-state" class="hidden">No notifications yet. Send one with <code>roar "hello"</code></div>
+    <div id="tab-notifications">
+      <div id="notification-list"></div>
+      <div id="empty-state" class="hidden">No notifications yet. Send one with <code>roar "hello"</code></div>
+    </div>
+    <div id="tab-settings" class="hidden">
+      <div class="settings-group">
+        <label class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Gravity</div>
+            <div class="setting-description">Drop the pet onto surfaces after dragging. Disable if dropping doesn't work well on your system.</div>
+          </div>
+          <input type="checkbox" id="gravity-toggle" class="toggle">
+        </label>
+      </div>
+    </div>
   </main>
   <footer>
     <button id="clear-btn">Clear History</button>
