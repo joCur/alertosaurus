@@ -1,8 +1,5 @@
 !macro customInstall
-  FileOpen $0 "$INSTDIR\roar.cmd" w
-  FileWrite $0 '@echo off$\r$\n'
-  FileWrite $0 'node "$INSTDIR\resources\app\dist\cli\index.js" %*$\r$\n'
-  FileClose $0
+  CopyFiles "$INSTDIR\resources\app\dist\cli\roar.exe" "$INSTDIR\roar.exe"
 
   ; Add install directory to user PATH so 'roar' works from any terminal
   FileOpen $0 "$PLUGINSDIR\add-path.ps1" w
@@ -23,7 +20,7 @@
 !macroend
 
 !macro customUnInstall
-  Delete "$INSTDIR\roar.cmd"
+  Delete "$INSTDIR\roar.exe"
 
   ; Remove install directory from user PATH
   FileOpen $0 "$PLUGINSDIR\remove-path.ps1" w
