@@ -473,6 +473,7 @@ function setupIPC() {
   });
 
   ipcMain.on('pet:install-update', () => {
+    isQuitting = true;
     installUpdate();
   });
 }
