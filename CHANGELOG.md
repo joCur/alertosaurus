@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.5.0](https://github.com/joCur/alertosaurus/compare/v1.4.1...v1.5.0) (2026-05-31)
+
+
+### Features
+
+* add auto-update support for all platforms ([#32](https://github.com/joCur/alertosaurus/issues/32)) ([b59c1cd](https://github.com/joCur/alertosaurus/commit/b59c1cd6a8c918ef7de693a40957982b104c6a2e))
+* add sleep timer setting ([#29](https://github.com/joCur/alertosaurus/issues/29)) ([40e526f](https://github.com/joCur/alertosaurus/commit/40e526fa454532cc2a0d7a13e48f5ae7819a2182))
+* add sleep timer setting to control when pet falls asleep ([40e526f](https://github.com/joCur/alertosaurus/commit/40e526fa454532cc2a0d7a13e48f5ae7819a2182))
+
+
+### Bug Fixes
+
+* install roar CLI reliably on macOS ([#31](https://github.com/joCur/alertosaurus/issues/31)) ([a1a6026](https://github.com/joCur/alertosaurus/commit/a1a60262c85a9a8f467a70f669ddaf002a0c94d8))
+
 ## [1.4.1](https://github.com/joCur/alertosaurus/compare/v1.4.0...v1.4.1) (2026-05-30)
 
 
