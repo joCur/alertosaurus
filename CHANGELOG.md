@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.6.2](https://github.com/joCur/alertosaurus/compare/v1.6.1...v1.6.2) (2026-05-31)
+
+
+### Bug Fixes
+
+* keep pet window visible on Windows ([#43](https://github.com/joCur/alertosaurus/issues/43)) ([70c3cb6](https://github.com/joCur/alertosaurus/commit/70c3cb61d741d99515e3464de3c6ffebaac91af6))
+* set releaseType so electron-builder uploads to release-please releases ([#44](https://github.com/joCur/alertosaurus/issues/44)) ([f534286](https://github.com/joCur/alertosaurus/commit/f534286704f6a550a97464e933a4d3a0d35ff3ef))
+* set releaseType to release so electron-builder uploads to existing releases ([f534286](https://github.com/joCur/alertosaurus/commit/f534286704f6a550a97464e933a4d3a0d35ff3ef))
+
 ## [1.6.1](https://github.com/joCur/alertosaurus/compare/v1.6.0...v1.6.1) (2026-05-31)
 
 
