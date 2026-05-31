@@ -1,4 +1,4 @@
-import { filterNotifications, NotificationItem } from './filter';
+import { filterNotifications, NotificationItem } from './filter.js';
 
 const api = (window as any).alertosaurus;
 document.body.dataset.platform = api.platform;
