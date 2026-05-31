@@ -235,6 +235,12 @@ footer {
   border-top: 1px solid #313244;
   display: flex;
   justify-content: space-between;
+  align-items: center;
+}
+
+#version-info {
+  font-size: 11px;
+  color: #6c7086;
 }
 
 footer button {
