@@ -320,11 +320,14 @@ toastContainer.addEventListener('click', () => {
 // --- Update toast ---
 
 api.onUpdateReady((version: string) => {
+  api.log(`update toast shown for v${version}`);
   updateToastMessage.textContent = `v${version} — click to restart!`;
   updateToast.classList.remove('hidden');
 });
 
 updateToast.addEventListener('click', () => {
+  api.log('update toast clicked — sending install-update');
+  updateToast.classList.add('hidden');
   api.installUpdate();
 });
 

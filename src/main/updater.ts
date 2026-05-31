@@ -1,5 +1,6 @@
 import { app } from 'electron';
 import { autoUpdater } from 'electron-updater';
+import { log } from './logger';
 
 const CHECK_INTERVAL_MS = 30 * 60 * 1000;
 
@@ -13,14 +14,19 @@ export function initAutoUpdater(onUpdateReady: (version: string) => void): void 
   autoUpdater.autoDownload = true;
   autoUpdater.autoInstallOnAppQuit = true;
 
+  autoUpdater.on('update-available', (info) => {
+    log('updater', `update available: ${info.version}`);
+  });
+
   autoUpdater.on('update-downloaded', (info) => {
+    log('updater', `update downloaded: ${info.version}`);
     if (updateReady) return;
     updateReady = true;
     onUpdateReady(info.version);
   });
 
   autoUpdater.on('error', (err) => {
-    console.error('Auto-update error:', err.message);
+    log('updater', `error: ${err.message}`);
   });
 
   autoUpdater.checkForUpdates().catch(() => {});
@@ -28,8 +34,9 @@ export function initAutoUpdater(onUpdateReady: (version: string) => void): void 
 }
 
 export function installUpdate(): void {
+  log('updater', `installUpdate called, updateReady=${updateReady}`);
   if (!updateReady) return;
-  autoUpdater.quitAndInstall(false, true);
+  autoUpdater.quitAndInstall(true, true);
 }
 
 /** Reset module-level state. For testing only. */
