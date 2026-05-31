@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.1](https://github.com/joCur/alertosaurus/compare/v1.6.0...v1.6.1) (2026-05-31)
+
+
+### Bug Fixes
+
+* use electron-builder publish to fix Windows auto-update ([#41](https://github.com/joCur/alertosaurus/issues/41)) ([363ab98](https://github.com/joCur/alertosaurus/commit/363ab98e994af1c9a346732ef35c1c7fffc1195b))
+
 ## [1.6.0](https://github.com/joCur/alertosaurus/compare/v1.5.2...v1.6.0) (2026-05-31)
 
 
