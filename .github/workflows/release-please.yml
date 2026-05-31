@@ -60,10 +60,11 @@ jobs:
       - name: Rebuild native modules for Electron
         run: npx electron-rebuild
 
-      - name: Package
-        run: npx electron-builder --${{ matrix.platform }}
+      - name: Package and publish
+        run: npx electron-builder --${{ matrix.platform }} --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EP_GH_IGNORE_TIME: true
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -71,19 +72,9 @@ jobs:
           name: alertosaurus-${{ matrix.platform }}
           path: |
             release/*.dmg
-            release/*.pkg
+            release/*.zip
             release/*.exe
             release/*.AppImage
             release/*.deb
+            release/*.yml
           if-no-files-found: ignore
-
-      - name: Upload to GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ needs.release-please.outputs.tag_name }}
-          files: |
-            release/*.dmg
-            release/*.pkg
-            release/*.exe
-            release/*.AppImage
-            release/*.deb
