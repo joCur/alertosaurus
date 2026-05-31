@@ -1,9 +1,13 @@
-export {};
+import { filterNotifications, NotificationItem } from './filter';
 
 const api = (window as any).alertosaurus;
 document.body.dataset.platform = api.platform;
 const listEl = document.getElementById('notification-list')!;
 const emptyEl = document.getElementById('empty-state')!;
+const noMatchesEl = document.getElementById('no-matches')!;
+const searchInput = document.getElementById('search-input') as HTMLInputElement;
+const searchClearBtn = document.getElementById('search-clear')!;
+const callerFilterEl = document.getElementById('caller-filter') as HTMLSelectElement;
 const endpointEl = document.getElementById('endpoint-info')!;
 const clearBtn = document.getElementById('clear-btn')!;
 const quitBtn = document.getElementById('quit-btn')!;
@@ -33,6 +37,37 @@ tabs.forEach(tab => {
   });
 });
 
+// --- Filtering ---
+
+let allNotifications: NotificationItem[] = [];
+
+function updateCallerDropdown(notifications: NotificationItem[]) {
+  const callers = [...new Set(notifications.map(n => n.caller))].sort();
+  const current = callerFilterEl.value;
+  callerFilterEl.innerHTML = '<option value="">All callers</option>';
+  for (const caller of callers) {
+    const opt = document.createElement('option');
+    opt.value = caller;
+    opt.textContent = caller;
+    callerFilterEl.appendChild(opt);
+  }
+  if (callers.includes(current)) {
+    callerFilterEl.value = current;
+  }
+}
+
+function applyFilters() {
+  const searchText = searchInput.value;
+  const callerFilter = callerFilterEl.value;
+
+  searchInput.classList.toggle('active', searchText.length > 0);
+  searchClearBtn.classList.toggle('hidden', searchText.length === 0);
+  callerFilterEl.classList.toggle('active', callerFilter.length > 0);
+
+  const filtered = filterNotifications(allNotifications, searchText, callerFilter);
+  render(filtered);
+}
+
 // --- Notifications ---
 
 function formatTime(iso: string): string {
@@ -51,17 +86,24 @@ function formatDay(iso: string): string {
   return d.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' });
 }
 
-interface NotificationItem { id: string; caller: string; message: string; received_at: string; }
-
 function render(notifications: NotificationItem[]) {
   listEl.innerHTML = '';
 
+  const hasFilters = searchInput.value.length > 0 || callerFilterEl.value.length > 0;
+
   if (notifications.length === 0) {
-    emptyEl.classList.remove('hidden');
+    if (hasFilters) {
+      noMatchesEl.classList.remove('hidden');
+      emptyEl.classList.add('hidden');
+    } else {
+      emptyEl.classList.remove('hidden');
+      noMatchesEl.classList.add('hidden');
+    }
     return;
   }
 
   emptyEl.classList.add('hidden');
+  noMatchesEl.classList.add('hidden');
 
   const grouped = new Map<string, NotificationItem[]>();
   for (const n of notifications) {
@@ -87,6 +129,10 @@ function render(notifications: NotificationItem[]) {
       caller.className = 'notification-caller';
       caller.textContent = n.caller;
       row.appendChild(caller);
+      caller.addEventListener('click', () => {
+        callerFilterEl.value = n.caller;
+        applyFilters();
+      });
 
       const message = document.createElement('span');
       message.className = 'notification-message';
@@ -116,8 +162,9 @@ function render(notifications: NotificationItem[]) {
 }
 
 async function loadNotifications() {
-  const notifications = await api.getNotifications();
-  render(notifications);
+  allNotifications = await api.getNotifications();
+  updateCallerDropdown(allNotifications);
+  applyFilters();
 }
 
 async function loadEndpoint() {
@@ -140,6 +187,13 @@ gravityToggle.addEventListener('change', () => {
 
 sleepTimerSelect.addEventListener('change', () => {
   api.setConfigValue('idle_timeout_ms', Number(sleepTimerSelect.value));
+});
+
+searchInput.addEventListener('input', applyFilters);
+callerFilterEl.addEventListener('change', applyFilters);
+searchClearBtn.addEventListener('click', () => {
+  searchInput.value = '';
+  applyFilters();
 });
 
 // --- Actions ---
