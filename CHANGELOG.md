@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.1](https://github.com/joCur/alertosaurus/compare/v1.5.0...v1.5.1) (2026-05-31)
+
+
+### Bug Fixes
+
+* restore release artifact uploads to GitHub Releases ([#33](https://github.com/joCur/alertosaurus/issues/33)) ([72405fe](https://github.com/joCur/alertosaurus/commit/72405feca845fdf55c27f54bd5d44b36c762fa66))
+
 ## [1.5.0](https://github.com/joCur/alertosaurus/compare/v1.4.1...v1.5.0) (2026-05-31)
 
 
