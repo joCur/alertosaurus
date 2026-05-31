@@ -13,6 +13,7 @@ publish:
   provider: github
   owner: joCur
   repo: alertosaurus
+  releaseType: release
 
 mac:
   target:
