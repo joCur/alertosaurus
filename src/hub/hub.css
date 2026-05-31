@@ -193,6 +193,7 @@ main {
   font-size: 13px;
   min-width: 100px;
   flex-shrink: 0;
+  cursor: pointer;
 }
 
 .notification-message {
@@ -322,10 +323,6 @@ footer button:hover {
 
 .search-clear:hover {
   color: #cdd6f4;
-}
-
-.notification-caller {
-  cursor: pointer;
 }
 
 .notification-caller:hover {

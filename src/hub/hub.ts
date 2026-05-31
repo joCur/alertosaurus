@@ -89,16 +89,10 @@ function formatDay(iso: string): string {
 function render(notifications: NotificationItem[]) {
   listEl.innerHTML = '';
 
-  const hasFilters = searchInput.value.length > 0 || callerFilterEl.value.length > 0;
-
   if (notifications.length === 0) {
-    if (hasFilters) {
-      noMatchesEl.classList.remove('hidden');
-      emptyEl.classList.add('hidden');
-    } else {
-      emptyEl.classList.remove('hidden');
-      noMatchesEl.classList.add('hidden');
-    }
+    const hasData = allNotifications.length > 0;
+    noMatchesEl.classList.toggle('hidden', !hasData);
+    emptyEl.classList.toggle('hidden', hasData);
     return;
   }
 
