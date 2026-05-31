@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import request from 'supertest';
 import path from 'path';
 import os from 'os';
@@ -7,6 +7,8 @@ import { createApp } from '../src/main/server';
 import { NotificationDb } from '../src/main/db';
 import { ToastQueue } from '../src/main/queue';
 import packageJson from '../package.json';
+
+vi.mock('../src/main/logger', () => ({ log: vi.fn() }));
 
 describe('HTTP Server', () => {
   let db: NotificationDb;
