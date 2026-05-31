@@ -8,6 +8,7 @@ import { PetStateMachine } from './state-machine';
 import { createApp } from './server';
 import { isCliInstalled, installCli } from './cli-install';
 import http from 'http';
+import { log } from './logger';
 import sharp from 'sharp';
 import {
   findLandingSurface,
@@ -34,10 +35,15 @@ const stateMachine = new PetStateMachine();
 
 let idleTimer: ReturnType<typeof setTimeout> | null = null;
 let toastTimer: ReturnType<typeof setTimeout> | null = null;
+let roarTimeout: ReturnType<typeof setTimeout> | null = null;
 let cancelGravity: (() => void) | null = null;
 
 function sendPetState(state: string) {
-  if (cancelGravity) return;
+  if (cancelGravity) {
+    log('state', `sendPetState(${state}) skipped — gravity active`);
+    return;
+  }
+  log('state', `sendPetState(${state})`);
   petWindow?.webContents.send('pet:set-state', state);
 }
 
@@ -50,6 +56,8 @@ function resetIdleTimer() {
 }
 
 function showToast(toast: { caller: string; message: string; duration_ms: number; received_at: string }) {
+  if (roarTimeout) { clearTimeout(roarTimeout); roarTimeout = null; }
+  log('toast', `showToast caller=${toast.caller} duration=${toast.duration_ms}`);
   petWindow?.webContents.send('pet:show-toast', toast);
 
   if (toastTimer) clearTimeout(toastTimer);
@@ -87,9 +95,15 @@ function onNotify() {
 
   const prevState = stateMachine.state;
   const state = stateMachine.notificationArrived();
+  log('notify', `prevState=${prevState} newState=${state} queueActive=${!!queue.active} gravity=${!!cancelGravity}`);
 
   if (state === 'roaring' && prevState !== 'roaring') {
     sendPetState('roaring');
+    scheduleRoarFallback();
+  } else if (state === 'roaring' && prevState === 'roaring' && !toastTimer && queue.active) {
+    log('notify', 'state already roaring with no active toast timer — resending roaring');
+    sendPetState('roaring');
+    scheduleRoarFallback();
   }
 
   if (queue.overflowCount > 0) {
@@ -97,6 +111,18 @@ function onNotify() {
   }
 
   hubWindow?.webContents.send('hub:updated');
+}
+
+function scheduleRoarFallback() {
+  if (roarTimeout) clearTimeout(roarTimeout);
+  roarTimeout = setTimeout(() => {
+    roarTimeout = null;
+    const active = queue.active;
+    if (active && stateMachine.state === 'roaring') {
+      log('notify', 'roar fallback fired — showing toast directly');
+      showToast(active);
+    }
+  }, 3000);
 }
 
 const expressApp = createApp(db, queue, onNotify);
@@ -351,12 +377,19 @@ async function captureAndFall() {
 
 function setupIPC() {
   ipcMain.on('pet:state-reached', (_e: Electron.IpcMainEvent, state: string) => {
+    log('ipc', `pet:state-reached state=${state}`);
     if (state === 'roaring') {
       const active = queue.active;
       if (active) {
         showToast(active);
+      } else {
+        log('ipc', 'pet:state-reached roaring but queue.active is null');
       }
     }
+  });
+
+  ipcMain.on('renderer:log', (_e: Electron.IpcMainEvent, message: string) => {
+    log('renderer', message);
   });
 
   ipcMain.on('pet:toast-dismissed', () => {
@@ -453,12 +486,14 @@ app.whenReady().then(async () => {
     Menu.setApplicationMenu(null);
   }
 
+  log('startup', `app ready, version=${app.getVersion()} platform=${process.platform}`);
   setupIPC();
   createPetWindow();
   createHubWindow();
   await createTray();
 
   httpServer = expressApp.listen(config.port, config.host, () => {
+    log('startup', `HTTP server listening on ${config.host}:${config.port}`);
     configManager.writeRuntime({
       host: config.host,
       port: config.port,
@@ -499,6 +534,7 @@ app.on('will-quit', () => {
   db.close();
   if (idleTimer) clearTimeout(idleTimer);
   if (toastTimer) clearTimeout(toastTimer);
+  if (roarTimeout) clearTimeout(roarTimeout);
 });
 
 app.on('window-all-closed', () => {

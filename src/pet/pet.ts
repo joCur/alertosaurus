@@ -84,8 +84,11 @@ function preloadSheets(): Promise<void> {
   return Promise.all(promises).then(() => {});
 }
 
+let sheetsReady = false;
+
 function activateLayer(sheetKey: string) {
   if (sheetKey === activeLayerKey) return;
+  if (!spriteLayers[sheetKey]) return;
   const oldKey = activeLayerKey;
   activeLayerKey = sheetKey;
   spriteLayers[sheetKey].classList.add('active');
@@ -96,10 +99,12 @@ function activateLayer(sheetKey: string) {
 
 function showFrame(sheetKey: string, frameIndex: number) {
   activateLayer(sheetKey);
+  const layer = spriteLayers[sheetKey];
+  if (!layer) return;
   const sheet = SHEETS[sheetKey];
   currentFrameCol = frameIndex % sheet.cols;
   currentFrameRow = Math.floor(frameIndex / sheet.cols);
-  spriteLayers[sheetKey].style.backgroundPosition = `${-currentFrameCol * DISPLAY_W}px ${-currentFrameRow * FRAME_H}px`;
+  layer.style.backgroundPosition = `${-currentFrameCol * DISPLAY_W}px ${-currentFrameRow * FRAME_H}px`;
 }
 
 function isPixelOpaque(localX: number, localY: number): boolean {
@@ -198,6 +203,7 @@ let visualPose: VisualPose = 'standing';
 function goToState(target: 'idle' | 'sleeping' | 'roaring') {
   const transitions: Segment[] = [];
   const from = visualPose;
+  api.log(`goToState target=${target} from=${from} sheetsReady=${sheetsReady}`);
 
   if (target === 'idle') {
     if (from === 'sitting') {
@@ -241,6 +247,7 @@ function goToState(target: 'idle' | 'sleeping' | 'roaring') {
     }
     visualPose = 'roaring';
     playSegments(transitions, { sheetKey: 'roaring', frames: range(0, 8) }, () => {
+      api.log('stateReached roaring');
       api.stateReached('roaring');
     });
   }
@@ -249,6 +256,7 @@ function goToState(target: 'idle' | 'sleeping' | 'roaring') {
 // --- State management ---
 
 api.onSetState((state: string) => {
+  api.log(`onSetState received: ${state}`);
   goToState(state as 'idle' | 'sleeping' | 'roaring');
 });
 
@@ -292,6 +300,7 @@ function relativeTime(iso: string): string {
 }
 
 api.onShowToast((data: { caller: string; message: string; received_at: string }) => {
+  api.log(`onShowToast caller=${data.caller}`);
   toastCaller.textContent = data.caller;
   toastMessage.textContent = data.message;
   toastTime.textContent = relativeTime(data.received_at);
@@ -398,6 +407,9 @@ spriteContainer.addEventListener('contextmenu', (e) => {
 });
 
 // --- Startup ---
+api.log('pet renderer loaded, preloading sheets...');
 preloadSheets().then(() => {
+  sheetsReady = true;
+  api.log('sheets loaded, transitioning to idle');
   goToState('idle');
 });
