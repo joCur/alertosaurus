@@ -169,6 +169,12 @@ function createPetWindow() {
     },
   });
 
+  // On Windows, the default always-on-top level loses z-order when other
+  // windows take focus. 'screen-saver' keeps the pet reliably above everything.
+  if (process.platform === 'win32') {
+    petWindow.setAlwaysOnTop(true, 'screen-saver');
+  }
+
   petWindow.setIgnoreMouseEvents(true, { forward: true });
   petWindow.loadFile(path.join(__dirname, '../pet/index.html'));
   petWindow.on('closed', () => { petWindow = null; });
@@ -244,6 +250,7 @@ async function createTray() {
 
   const menuItems: Electron.MenuItemConstructorOptions[] = [
     { label: 'Show Hub', click: () => { hubWindow?.show(); hubWindow?.focus(); } },
+    { label: 'Show Pet', click: () => { petWindow?.showInactive(); } },
     { label: 'Reset Pet Position', click: () => resetPetPosition() },
   ];
 
