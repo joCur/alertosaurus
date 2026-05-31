@@ -6,6 +6,8 @@ const toastCaller = document.getElementById('toast-caller')!;
 const toastMessage = document.getElementById('toast-message')!;
 const toastTime = document.getElementById('toast-time')!;
 const overflow = document.getElementById('overflow')!;
+const updateToast = document.getElementById('update-toast')!;
+const updateToastMessage = document.getElementById('update-toast-message')!;
 
 const api = (window as any).alertosaurus;
 
@@ -306,6 +308,17 @@ toastContainer.addEventListener('click', () => {
   api.toastDismissed();
 });
 
+// --- Update toast ---
+
+api.onUpdateReady((version: string) => {
+  updateToastMessage.textContent = `v${version} — click to restart!`;
+  updateToast.classList.remove('hidden');
+});
+
+updateToast.addEventListener('click', () => {
+  api.installUpdate();
+});
+
 // --- Overflow ---
 
 api.onShowOverflow((count: number) => {
@@ -322,7 +335,7 @@ overflow.addEventListener('click', () => {
 document.addEventListener('mousemove', (e) => {
   if (isDragging) return;
   const el = document.elementFromPoint(e.clientX, e.clientY);
-  if (el && (el.closest('#toast-container') || el.closest('#overflow'))) {
+  if (el && (el.closest('#toast-container') || el.closest('#overflow') || el.closest('#update-toast'))) {
     api.setIgnoreMouseEvents(false);
   } else if (el && el.closest('#sprite-container')) {
     const rect = spriteContainer.getBoundingClientRect();
