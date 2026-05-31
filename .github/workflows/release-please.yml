@@ -60,8 +60,8 @@ jobs:
       - name: Rebuild native modules for Electron
         run: npx electron-rebuild
 
-      - name: Package
-        run: npx electron-builder --${{ matrix.platform }} --publish never
+      - name: Package and publish
+        run: npx electron-builder --${{ matrix.platform }} --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -75,17 +75,4 @@ jobs:
             release/*.exe
             release/*.AppImage
             release/*.deb
-            release/*.yml
           if-no-files-found: ignore
-
-      - name: Upload to GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ needs.release-please.outputs.tag_name }}
-          files: |
-            release/*.dmg
-            release/*.zip
-            release/*.exe
-            release/*.AppImage
-            release/*.deb
-            release/*.yml
