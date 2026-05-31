@@ -4,8 +4,9 @@ const mockAutoUpdater = vi.hoisted(() => ({
   autoDownload: false,
   autoInstallOnAppQuit: false,
   on: vi.fn(),
-  checkForUpdates: vi.fn(),
+  checkForUpdates: vi.fn().mockResolvedValue(null),
   quitAndInstall: vi.fn(),
+  removeAllListeners: vi.fn(),
 }));
 
 const mockApp = vi.hoisted(() => ({ isPackaged: true }));

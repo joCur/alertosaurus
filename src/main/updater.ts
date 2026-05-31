@@ -14,6 +14,7 @@ export function initAutoUpdater(onUpdateReady: (version: string) => void): void 
   autoUpdater.autoInstallOnAppQuit = true;
 
   autoUpdater.on('update-downloaded', (info) => {
+    if (updateReady) return;
     updateReady = true;
     onUpdateReady(info.version);
   });
@@ -22,8 +23,8 @@ export function initAutoUpdater(onUpdateReady: (version: string) => void): void 
     console.error('Auto-update error:', err.message);
   });
 
-  autoUpdater.checkForUpdates();
-  intervalHandle = setInterval(() => autoUpdater.checkForUpdates(), CHECK_INTERVAL_MS);
+  autoUpdater.checkForUpdates().catch(() => {});
+  intervalHandle = setInterval(() => { autoUpdater.checkForUpdates().catch(() => {}); }, CHECK_INTERVAL_MS);
 }
 
 export function installUpdate(): void {
@@ -38,4 +39,5 @@ export function _resetForTesting(): void {
     clearInterval(intervalHandle);
     intervalHandle = null;
   }
+  autoUpdater.removeAllListeners();
 }
