@@ -9,12 +9,16 @@ asarUnpack:
   - "**/node_modules/@img/**"
   - "dist/cli/**/*"
 
-mac:
-  target: pkg
-  category: public.app-category.developer-tools
+publish:
+  provider: github
+  owner: joCur
+  repo: alertosaurus
 
-pkg:
-  scripts: build/pkg-scripts
+mac:
+  target:
+    - dmg
+    - zip
+  category: public.app-category.developer-tools
 
 linux:
   target:
