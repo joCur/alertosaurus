@@ -19,6 +19,7 @@ import {
   PET_WINDOW_HEIGHT,
 } from './gravity';
 import { initAutoUpdater, installUpdate } from './updater';
+import { ensureCliSymlink } from './cli-symlink';
 
 let petWindow: BrowserWindow | null = null;
 let hubWindow: BrowserWindow | null = null;
@@ -451,6 +452,11 @@ app.whenReady().then(async () => {
   });
 
   resetIdleTimer();
+
+  if (process.platform === 'darwin' && app.isPackaged) {
+    const roarBinary = path.join(process.resourcesPath, 'app.asar.unpacked/dist/cli/roar');
+    ensureCliSymlink(roarBinary, '/usr/local/bin/roar');
+  }
 
   initAutoUpdater((version) => {
     petWindow?.webContents.send('pet:show-update-toast', version);
