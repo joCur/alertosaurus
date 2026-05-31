@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -102,6 +103,15 @@ func readRuntimeFile(path string) (*runtimeInfo, error) {
 	return &info, nil
 }
 
+func isProcessAlive(pid int) bool {
+	proc, err := os.FindProcess(pid)
+	if err != nil {
+		return false
+	}
+	err = proc.Signal(syscall.Signal(0))
+	return err == nil
+}
+
 func healthCheck(host string, port int) error {
 	client := &http.Client{Timeout: 2 * time.Second}
 	url := fmt.Sprintf("http://%s:%d/health", host, port)
@@ -185,6 +195,16 @@ func run() int {
 	if parsed.Verbose {
 		fmt.Fprintf(os.Stderr, "found runtime: host=%s port=%d pid=%d started=%s\n",
 			info.Host, info.Port, info.Pid, info.StartedAt)
+	}
+
+	if !isProcessAlive(info.Pid) {
+		fmt.Fprintln(os.Stderr, "alertosaurus is not running (process has exited).")
+		fmt.Fprintln(os.Stderr, "Start it with: alertosaurus")
+		if parsed.Verbose {
+			fmt.Fprintf(os.Stderr, "  stale runtime file: %s\n", rtPath)
+			fmt.Fprintf(os.Stderr, "  recorded pid %d is no longer alive\n", info.Pid)
+		}
+		return 1
 	}
 
 	if err := healthCheck(info.Host, info.Port); err != nil {
