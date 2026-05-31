@@ -30,5 +30,7 @@ contextBridge.exposeInMainWorld('alertosaurus', {
   getConfig: () => ipcRenderer.invoke('hub:get-config'),
   setConfigValue: (key: string, value: unknown) => ipcRenderer.invoke('hub:set-config-value', key, value),
   quit: () => ipcRenderer.send('hub:quit'),
+  onUpdateReady: (cb: (version: string) => void) => onChannel('pet:show-update-toast', cb),
+  installUpdate: () => ipcRenderer.send('pet:install-update'),
   onNotificationsUpdated: (cb: () => void) => onChannel('hub:updated', cb),
 });
