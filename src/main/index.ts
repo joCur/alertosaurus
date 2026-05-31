@@ -480,6 +480,7 @@ function setupIPC() {
   });
 
   ipcMain.on('pet:install-update', () => {
+    log('updater', 'pet:install-update received from renderer');
     isQuitting = true;
     installUpdate();
   });

@@ -19,6 +19,10 @@ vi.mock('electron', () => ({
   app: mockApp,
 }));
 
+vi.mock('../src/main/logger', () => ({
+  log: vi.fn(),
+}));
+
 import { initAutoUpdater, installUpdate, _resetForTesting } from '../src/main/updater';
 
 describe('updater', () => {
@@ -64,9 +68,10 @@ describe('updater', () => {
     expect(mockAutoUpdater.checkForUpdates).toHaveBeenCalledTimes(2);
   });
 
-  it('registers event listeners for update-downloaded and error', () => {
+  it('registers event listeners for update-available, update-downloaded and error', () => {
     initAutoUpdater(vi.fn());
     const events = mockAutoUpdater.on.mock.calls.map((c: any[]) => c[0]);
+    expect(events).toContain('update-available');
     expect(events).toContain('update-downloaded');
     expect(events).toContain('error');
   });
@@ -117,6 +122,6 @@ describe('updater', () => {
 
     // Now installUpdate should proceed
     installUpdate();
-    expect(mockAutoUpdater.quitAndInstall).toHaveBeenCalledTimes(1);
+    expect(mockAutoUpdater.quitAndInstall).toHaveBeenCalledWith(true, true);
   });
 });
