@@ -19,6 +19,7 @@ import {
   PET_WINDOW_WIDTH,
   PET_WINDOW_HEIGHT,
 } from './gravity';
+import { initAutoUpdater, installUpdate } from './updater';
 
 let petWindow: BrowserWindow | null = null;
 let hubWindow: BrowserWindow | null = null;
@@ -437,6 +438,10 @@ function setupIPC() {
   ipcMain.on('hub:quit', () => {
     app.quit();
   });
+
+  ipcMain.on('pet:install-update', () => {
+    installUpdate();
+  });
 }
 
 app.on('before-quit', () => { isQuitting = true; });
@@ -479,6 +484,10 @@ app.whenReady().then(async () => {
   }
 
   resetIdleTimer();
+
+  initAutoUpdater((version) => {
+    petWindow?.webContents.send('pet:show-update-toast', version);
+  });
 });
 
 app.on('will-quit', () => {
