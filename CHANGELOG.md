@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.7.0](https://github.com/joCur/alertosaurus/compare/v1.6.3...v1.7.0) (2026-05-31)
+
+
+### Features
+
+* add notification search and caller filter to hub ([#50](https://github.com/joCur/alertosaurus/issues/50)) ([8d142ab](https://github.com/joCur/alertosaurus/commit/8d142ab44cd8aae415c5ad7d46d055a0754ee0ef))
+
+
+### Bug Fixes
+
+* notifications never display due to stale instance and gravity blocking ([#48](https://github.com/joCur/alertosaurus/issues/48)) ([495040e](https://github.com/joCur/alertosaurus/commit/495040e298ef35cad990742b5d06475e2cf0f227))
+
 ## [1.6.3](https://github.com/joCur/alertosaurus/compare/v1.6.2...v1.6.3) (2026-05-31)
 
 
