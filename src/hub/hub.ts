@@ -7,6 +7,7 @@ const emptyEl = document.getElementById('empty-state')!;
 const endpointEl = document.getElementById('endpoint-info')!;
 const clearBtn = document.getElementById('clear-btn')!;
 const quitBtn = document.getElementById('quit-btn')!;
+const versionEl = document.getElementById('version-info')!;
 const gravityToggle = document.getElementById('gravity-toggle') as HTMLInputElement;
 const sleepTimerSelect = document.getElementById('sleep-timer-select') as HTMLSelectElement;
 
@@ -122,6 +123,7 @@ async function loadNotifications() {
 async function loadEndpoint() {
   const info = await api.getEndpointInfo();
   endpointEl.textContent = `Listening on ${info.host}:${info.port}`;
+  versionEl.textContent = `v${info.version}`;
 }
 
 // --- Settings ---

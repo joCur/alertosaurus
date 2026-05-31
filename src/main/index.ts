@@ -437,7 +437,7 @@ function setupIPC() {
   });
 
   ipcMain.handle('hub:get-endpoint-info', () => {
-    return { host: config.host, port: config.port };
+    return { host: config.host, port: config.port, version: app.getVersion() };
   });
 
   ipcMain.handle('hub:delete-notification', (_e: Electron.IpcMainInvokeEvent, id: string) => {
