@@ -1,2 +1,5 @@
 #!/bin/bash
-ln -sf "/Applications/Alertosaurus.app/Contents/Resources/app.asar.unpacked/dist/cli/roar" /usr/local/bin/roar
+BINARY="/Applications/Alertosaurus.app/Contents/Resources/app.asar.unpacked/dist/cli/roar"
+mkdir -p /usr/local/bin
+chmod +x "$BINARY" 2>/dev/null
+ln -sf "$BINARY" /usr/local/bin/roar

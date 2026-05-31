@@ -1,4 +1,4 @@
-import { app, BrowserWindow, desktopCapturer, ipcMain, Menu, nativeImage, screen, systemPreferences, Tray } from 'electron';
+import { app, BrowserWindow, desktopCapturer, dialog, ipcMain, Menu, nativeImage, screen, systemPreferences, Tray } from 'electron';
 import fs from 'fs';
 import path from 'path';
 import { ConfigManager } from './config';
@@ -6,6 +6,7 @@ import { NotificationDb } from './db';
 import { ToastQueue } from './queue';
 import { PetStateMachine } from './state-machine';
 import { createApp } from './server';
+import { isCliInstalled, installCli } from './cli-install';
 import http from 'http';
 import sharp from 'sharp';
 import {
@@ -214,12 +215,28 @@ async function createTray() {
   tray = new Tray(icon);
   tray.setToolTip('Alertosaurus');
 
-  const contextMenu = Menu.buildFromTemplate([
+  const menuItems: Electron.MenuItemConstructorOptions[] = [
     { label: 'Show Hub', click: () => { hubWindow?.show(); hubWindow?.focus(); } },
     { label: 'Reset Pet Position', click: () => resetPetPosition() },
-    { type: 'separator' },
-    { label: 'Quit', click: () => app.quit() },
-  ]);
+  ];
+
+  if (process.platform !== 'win32') {
+    menuItems.push({
+      label: "Install 'roar' Command...",
+      click: async () => {
+        const result = await installCli();
+        if (result.success) {
+          dialog.showMessageBox({ type: 'info', message: "The 'roar' command has been installed.\nRun 'roar \"hello\"' from any terminal." });
+        } else {
+          dialog.showMessageBox({ type: 'error', message: `Failed to install CLI: ${result.error}` });
+        }
+      },
+    });
+  }
+
+  menuItems.push({ type: 'separator' }, { label: 'Quit', click: () => app.quit() });
+
+  const contextMenu = Menu.buildFromTemplate(menuItems);
   tray.setContextMenu(contextMenu);
 }
 
@@ -444,6 +461,22 @@ app.whenReady().then(async () => {
       started_at: new Date().toISOString(),
     });
   });
+
+  if (process.platform !== 'win32' && app.isPackaged && !isCliInstalled()) {
+    const { response } = await dialog.showMessageBox({
+      type: 'question',
+      buttons: ['Install', 'Later'],
+      defaultId: 0,
+      message: "Install 'roar' command?",
+      detail: "Alertosaurus can install the 'roar' CLI so you can send notifications from any terminal.\nThis requires administrator privileges.",
+    });
+    if (response === 0) {
+      const result = await installCli();
+      if (!result.success) {
+        dialog.showMessageBox({ type: 'error', message: `Failed to install CLI: ${result.error}` });
+      }
+    }
+  }
 
   resetIdleTimer();
 });
