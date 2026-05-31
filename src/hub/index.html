@@ -16,8 +16,18 @@
   </nav>
   <main>
     <div id="tab-notifications">
+      <div id="filter-bar">
+        <div class="search-wrapper">
+          <input type="text" id="search-input" placeholder="Search notifications...">
+          <button id="search-clear" class="search-clear hidden">&times;</button>
+        </div>
+        <select id="caller-filter" class="setting-select">
+          <option value="">All callers</option>
+        </select>
+      </div>
       <div id="notification-list"></div>
       <div id="empty-state" class="hidden">No notifications yet. Send one with <code>roar "hello"</code></div>
+      <div id="no-matches" class="hidden">No matching notifications</div>
     </div>
     <div id="tab-settings" class="hidden">
       <div class="settings-group">

@@ -193,6 +193,7 @@ main {
   font-size: 13px;
   min-width: 100px;
   flex-shrink: 0;
+  cursor: pointer;
 }
 
 .notification-message {
@@ -265,4 +266,72 @@ footer button:hover {
 #quit-btn:hover {
   background: #f38ba8;
   color: #1e1e2e;
+}
+
+#filter-bar {
+  display: flex;
+  gap: 8px;
+  padding: 8px 20px;
+}
+
+.search-wrapper {
+  position: relative;
+  flex: 1;
+}
+
+#search-input {
+  width: 100%;
+  background: #313244;
+  border: 1px solid #45475a;
+  border-radius: 6px;
+  padding: 6px 28px 6px 10px;
+  color: #cdd6f4;
+  font-size: 13px;
+  font-family: 'SF Mono', 'Consolas', monospace;
+}
+
+#search-input::placeholder {
+  color: #6c7086;
+}
+
+#search-input:focus {
+  outline: none;
+  border-color: #f9e2af;
+}
+
+#search-input.active {
+  border-color: #f9e2af;
+}
+
+#caller-filter.active {
+  border-color: #f9e2af;
+}
+
+.search-clear {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #6c7086;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.search-clear:hover {
+  color: #cdd6f4;
+}
+
+.notification-caller:hover {
+  text-decoration: underline;
+}
+
+#no-matches {
+  text-align: center;
+  color: #6c7086;
+  padding: 40px 20px;
+  font-size: 14px;
 }
