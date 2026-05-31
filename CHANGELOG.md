@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.6.0](https://github.com/joCur/alertosaurus/compare/v1.5.2...v1.6.0) (2026-05-31)
+
+
+### Features
+
+* show app version in hub footer ([#40](https://github.com/joCur/alertosaurus/issues/40)) ([2c816c4](https://github.com/joCur/alertosaurus/commit/2c816c4166b807055f821c4c93fecfaa59dbacf0))
+
+
+### Bug Fixes
+
+* force app relaunch after macOS auto-update install ([#39](https://github.com/joCur/alertosaurus/issues/39)) ([b9ad477](https://github.com/joCur/alertosaurus/commit/b9ad47745f8cc0580beee831350c58283fb7cf1b))
+* set isQuitting before quitAndInstall so hub window allows close ([#37](https://github.com/joCur/alertosaurus/issues/37)) ([984d891](https://github.com/joCur/alertosaurus/commit/984d8913de3ead773e9cb92d709e1df43a60e73b))
+
 ## [1.5.2](https://github.com/joCur/alertosaurus/compare/v1.5.1...v1.5.2) (2026-05-31)
 
 
