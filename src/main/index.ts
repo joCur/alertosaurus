@@ -40,8 +40,15 @@ let cancelGravity: (() => void) | null = null;
 
 function sendPetState(state: string) {
   if (cancelGravity) {
-    log('state', `sendPetState(${state}) skipped — gravity active`);
-    return;
+    log('state', `sendPetState(${state}) — cancelling gravity`);
+    cancelGravity();
+    cancelGravity = null;
+    if (petWindow) {
+      const [x, y] = petWindow.getPosition();
+      config.pet_position = { x, y };
+      configManager.save(config);
+      petWindow.webContents.send('pet:landed');
+    }
   }
   log('state', `sendPetState(${state})`);
   petWindow?.webContents.send('pet:set-state', state);
