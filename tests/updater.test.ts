@@ -8,15 +8,17 @@ const mockAutoUpdater = vi.hoisted(() => ({
   quitAndInstall: vi.fn(),
 }));
 
+const mockApp = vi.hoisted(() => ({ isPackaged: true }));
+
 vi.mock('electron-updater', () => ({
   autoUpdater: mockAutoUpdater,
 }));
 
 vi.mock('electron', () => ({
-  app: { isPackaged: true },
+  app: mockApp,
 }));
 
-import { initAutoUpdater, installUpdate } from '../src/main/updater';
+import { initAutoUpdater, installUpdate, _resetForTesting } from '../src/main/updater';
 
 describe('updater', () => {
   beforeEach(() => {
@@ -24,10 +26,19 @@ describe('updater', () => {
     vi.clearAllMocks();
     mockAutoUpdater.autoDownload = false;
     mockAutoUpdater.autoInstallOnAppQuit = false;
+    mockApp.isPackaged = true;
+    _resetForTesting();
   });
 
   afterEach(() => {
     vi.useRealTimers();
+  });
+
+  it('does nothing when app.isPackaged is false', () => {
+    mockApp.isPackaged = false;
+    initAutoUpdater(vi.fn());
+    expect(mockAutoUpdater.checkForUpdates).not.toHaveBeenCalled();
+    expect(mockAutoUpdater.on).not.toHaveBeenCalled();
   });
 
   it('configures autoUpdater settings', () => {
@@ -52,7 +63,7 @@ describe('updater', () => {
     expect(mockAutoUpdater.checkForUpdates).toHaveBeenCalledTimes(2);
   });
 
-  it('registers event listeners for update-available, update-downloaded, and error', () => {
+  it('registers event listeners for update-downloaded and error', () => {
     initAutoUpdater(vi.fn());
     const events = mockAutoUpdater.on.mock.calls.map((c: any[]) => c[0]);
     expect(events).toContain('update-downloaded');
@@ -81,7 +92,29 @@ describe('updater', () => {
     expect(() => errorHandler(new Error('network error'))).not.toThrow();
   });
 
-  it('installUpdate calls quitAndInstall', () => {
+  it('does not initialize twice when called a second time', () => {
+    initAutoUpdater(vi.fn());
+    const callsAfterFirst = mockAutoUpdater.checkForUpdates.mock.calls.length;
+
+    initAutoUpdater(vi.fn());
+    expect(mockAutoUpdater.checkForUpdates).toHaveBeenCalledTimes(callsAfterFirst);
+  });
+
+  it('installUpdate calls quitAndInstall only after update is downloaded', () => {
+    const onUpdateReady = vi.fn();
+    initAutoUpdater(onUpdateReady);
+
+    // Before update downloaded: should be a no-op
+    installUpdate();
+    expect(mockAutoUpdater.quitAndInstall).not.toHaveBeenCalled();
+
+    // Simulate update-downloaded event
+    const downloadedHandler = mockAutoUpdater.on.mock.calls.find(
+      (c: any[]) => c[0] === 'update-downloaded'
+    )![1];
+    downloadedHandler({ version: '2.0.0' });
+
+    // Now installUpdate should proceed
     installUpdate();
     expect(mockAutoUpdater.quitAndInstall).toHaveBeenCalledTimes(1);
   });
