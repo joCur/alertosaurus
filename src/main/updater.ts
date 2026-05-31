@@ -29,7 +29,7 @@ export function initAutoUpdater(onUpdateReady: (version: string) => void): void 
 
 export function installUpdate(): void {
   if (!updateReady) return;
-  autoUpdater.quitAndInstall();
+  autoUpdater.quitAndInstall(false, true);
 }
 
 /** Reset module-level state. For testing only. */
