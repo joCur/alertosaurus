@@ -3,6 +3,7 @@ import rateLimit from 'express-rate-limit';
 import { NotificationDb } from './db';
 import { ToastQueue } from './queue';
 import { ToastData } from '../shared/types';
+import { log } from './logger';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version } = require('../../package.json');
@@ -49,7 +50,8 @@ export function createApp(db: NotificationDb, queue: ToastQueue, onNotify?: Noti
 
     const result = db.insert({ caller, message, duration_ms: dur });
     const toast: ToastData = { ...result, caller, message, duration_ms: dur };
-    queue.push(toast);
+    const immediate = queue.push(toast);
+    log('server', `POST /notify caller=${caller} id=${result.id} queued=${!immediate}`);
     onNotify?.();
 
     res.json({ id: result.id, received_at: result.received_at });
